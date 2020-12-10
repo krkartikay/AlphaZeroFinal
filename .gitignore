@@ -1,0 +1,4 @@
+*.py[co]
+*.log
+__pycache__/
+.vscode/
