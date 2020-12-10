@@ -6,3 +6,10 @@
 #  - Train.py [training]
 
 # Also allows saving and loading data from .h5 file.
+
+import tensorflow as tf
+import tensorflow.keras as Keras
+
+
+import config
+
