@@ -1,4 +1,5 @@
 *.py[co]
 *.log
+*.h5
 __pycache__/
 .vscode/
