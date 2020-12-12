@@ -11,12 +11,18 @@ import config
 import selfplay
 
 import requests
+import tempfile
 
-net = model.model()
+net = model.Model()
 
 def load_model_weights():
-    # load weights from server
-    pass
+    data = requests.get(config.server_address + "/weights")
+    tfile, tname = tempfile.mkstemp(".h5")
+    open(tname, "wb").write(data.content)
+    net.load(tname)
+    g = game.GameState()
+    g.state = [0,0,1,0,1,0,0,0,-1]
+    print(net.predict(g))
 
 def play_game():
     # use MCTS to play a game, and return training data
@@ -25,9 +31,11 @@ def play_game():
 
 def upload_data():
     # send back training data to server
-    pass
+    resp = requests.post(config.server_address + "/train", data=b"working\n")
+    assert(resp.content == b'"OK"\n')
 
 while True:
     load_model_weights()
-    data = play_game()
-    upload_data(data)
+    play_game()
+    upload_data()
+    break

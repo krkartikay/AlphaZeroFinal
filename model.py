@@ -40,8 +40,8 @@ class Model():
         history = self.model.fit(xs, [probs, values], batch_size=2048, epochs=epochs, verbose=False)
         return history
 
-    def load(self):
-        self.model.load_weights("latest_weights.h5")
+    def load(self, filename="latest_weights.h5"):
+        self.model.load_weights(filename)
 
-    def store(self):
-        self.model.save_weights("latest_weights.h5")
+    def store(self, filename="latest_weights.h5"):
+        self.model.save_weights(filename)

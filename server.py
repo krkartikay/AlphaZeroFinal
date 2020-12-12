@@ -8,6 +8,8 @@
 #  - latest_weights.h5 : Latest model weights
 #  - training_data.log : Training data sent by clients
 
+import config
+
 import flask
 import io
 from filelock import FileLock
@@ -32,4 +34,4 @@ def post_training_data():
             file.write(flask.request.data)
     return flask.jsonify("OK")
 
-app.run(port=5000, debug=True)
+app.run(host=config.server_host, port=config.server_port, debug=True)

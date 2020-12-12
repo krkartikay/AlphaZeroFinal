@@ -1,6 +1,7 @@
 0. [x] GAMESTATE!!!
 1. [x] MODEL
-2. [ ] SERVER
-3. [ ] CLIENT
+2. [x] SERVER
+3. [x] CLIENT
 4. [ ] MCTS (SELF_PLAY)
-5. [ ] etc etc
+5. [ ] Training
+6. [ ] Visualisation
