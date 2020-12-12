@@ -2,6 +2,7 @@
 1. [x] MODEL
 2. [x] SERVER
 3. [x] CLIENT
+-.   [x] Evaluate
 4. [ ] MCTS (SELF_PLAY)
 5. [ ] Training
 6. [ ] Visualisation

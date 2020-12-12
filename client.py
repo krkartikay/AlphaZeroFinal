@@ -5,7 +5,6 @@
 # with the MCTS algorithm, thereby generating training data, which it
 # reports to the server upon termination of the game.
 
-import game
 import model
 import config
 import selfplay
@@ -20,22 +19,19 @@ def load_model_weights():
     tfile, tname = tempfile.mkstemp(".h5")
     open(tname, "wb").write(data.content)
     net.load(tname)
-    g = game.GameState()
-    g.state = [0,0,1,0,1,0,0,0,-1]
-    print(net.predict(g))
 
 def play_game():
     # use MCTS to play a game, and return training data
-    # maybe transfer this stuff to mcts.py or something
-    pass
+    # encode the data in a string format
+    game_history = selfplay.selfplay(net)
+    return game_history
 
-def upload_data():
+def upload_data(string):
     # send back training data to server
-    resp = requests.post(config.server_address + "/train", data=b"working\n")
+    resp = requests.post(config.server_address + "/train", data=string.encode())
     assert(resp.content == b'"OK"\n')
 
 while True:
     load_model_weights()
-    play_game()
-    upload_data()
-    break
+    data = play_game()
+    upload_data(data)

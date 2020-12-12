@@ -1,11 +1,16 @@
 # Game Specific rules
 
 # Imported and used by:
-#  - Client.py [for self play]
+#  - Selfplay.py [for self play]
 #  - Evaluate.py [for evaluating network]
 
 import numpy as np
 from typing import List
+
+win_patterns = [
+    [0, 1, 2],  [3, 4, 5],  [6, 7, 8],  [0, 3, 6],
+    [1, 4, 7],  [2, 5, 8],  [0, 4, 8],  [2, 4, 6],
+]
 
 class GameState:
 
@@ -21,7 +26,7 @@ class GameState:
         else:
             return -1
 
-    def __winner(self):
+    def winner(self):
         for l in win_patterns:
             a, b, c = l
             if (self.state[a] == self.state[b] == self.state[c] and self.state[a] != 0):
@@ -32,19 +37,24 @@ class GameState:
         return None
 
     def terminated(self) -> bool:
-        if self.__winner() is not None:
+        if self.winner() is not None:
             return True
         else:
             return False
 
     def legal_actions(self) -> List[bool]:
         if self.terminated():
-            return [x==0 for x in self.state]
-        else:
             return [False]*9
+        else:
+            return [x==0 for x in self.state]
     
     def next_state(self, action: int):
-        return GameState(self)
+        if self.state[action] == 0:
+            g = GameState(self)
+            g.state[action] = self.player()
+            return g
+        else:
+            raise RuntimeError("Illegal action")
     
     def to_image(self):
         "Returns representation of state suitable for input to neural network"
@@ -59,7 +69,7 @@ class GameState:
         +1 : Winning state
         -1 : Losing state
         """
-        winner = self.__winner()
+        winner = self.winner()
         to_play = self.player()
         if winner == 0:
             return 0

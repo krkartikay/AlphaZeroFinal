@@ -1,5 +1,7 @@
 *.py[co]
 *.log
 *.h5
+*.tsv
+*.csv
 __pycache__/
 .vscode/

@@ -1,7 +1,7 @@
 # Keras model for Alpha Zero Neural network
 
 # Imported and used by:
-#  - Client.py [prediction]
+#  - Selfplay.py [prediction]
 #  - Evaluate.py [prediction]
 #  - Train.py [training]
 

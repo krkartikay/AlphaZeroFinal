@@ -34,4 +34,4 @@ def post_training_data():
             file.write(flask.request.data)
     return flask.jsonify("OK")
 
-app.run(host=config.server_host, port=config.server_port, debug=True)
+app.run(host=config.server_host, port=config.server_port)

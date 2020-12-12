@@ -8,3 +8,5 @@ server_port = 5000
 server_address = f"http://{server_host}:{server_port}"
 
 learning_rate = 0.1
+
+evaluate_num = 100
