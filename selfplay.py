@@ -22,7 +22,7 @@ class Node(game.GameState):
 
     def expand(self, net: model.Model):
         if self.terminated():
-            self.value = self.leaf_value()
+            self.value = float(self.leaf_value())
         else:
             l = self.legal_actions()
             probs, value = net.predict(self)
@@ -75,7 +75,7 @@ class MCTS():
         root = Node(g)
         for i in range(config.num_simulate):
             self.simulate(root)
-        self.print_tree(root)
+        # self.print_tree(root)
         return [
             root.children[i].visit/(root.visit-1) if i in root.children else 0
             for i in range(config.num_actions)
@@ -100,7 +100,10 @@ class MCTS():
         return node
 
     def encode_history(self, history) -> str:
-        return f"{history}"
+        lines = []
+        for g, probs in history:
+            lines.append(str(g.state) + "\t" + str(probs))
+        return "\n".join(lines)+"\n"
 
     def print_tree(self, n: Node, depth=0):
         if n.visit:
@@ -113,5 +116,4 @@ if __name__ == "__main__":
     net = model.Model()
     net.load("tmodel.h5")
     m = MCTS(net)
-    g = game.GameState()
-    print("Final prbs: ", m.get_probs(g))
+    print(m.selfplay())
