@@ -9,4 +9,9 @@ server_address = f"http://{server_host}:{server_port}"
 
 learning_rate = 0.1
 
-evaluate_num = 100
+num_actions = 9
+num_evaluate = 100
+num_simulate = 5
+
+pb_c_init = 1.25
+pb_c_base = 20000

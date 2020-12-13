@@ -22,10 +22,10 @@ class Model():
         l1 = keras.layers.Dense(20, activation="relu")(inp_layer)
         l2 = keras.layers.Dense(20, activation="relu")(l1)
         prob_logits = keras.layers.Dense(9)(l2)
-        prob = keras.layers.Activation("softmax")(prob_logits)
-        value_head = keras.layers.Dense(1, activation="sigmoid")(l2)
+        prob_head = keras.layers.Activation("softmax")(prob_logits)
+        value_head = keras.layers.Dense(1, activation="tanh")(l2)
         self.model = keras.Model(inputs=inp_layer, outputs=[prob_logits, value_head])
-        self.pred_model = keras.Model(inputs=inp_layer, outputs=[prob, value_head])
+        self.pred_model = keras.Model(inputs=inp_layer, outputs=[prob_head, value_head])
         self.model.compile(optimizer=keras.optimizers.SGD(config.learning_rate), loss=[
             keras.losses.CategoricalCrossentropy(from_logits=True),
             keras.losses.MeanSquaredError()

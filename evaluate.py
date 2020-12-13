@@ -57,7 +57,7 @@ while True:
     load_model_weights()
     d = {}
     t1 = time.time()
-    for i in range(config.evaluate_num):
+    for i in range(config.num_evaluate):
         r = evaluate_net(exclude_illegal=False)
         d[r] = d.get(r, 0) + 1
     t2 = time.time()

@@ -63,7 +63,7 @@ class GameState:
     # for minimax, optimal value is:
     # optimal_value(s) = negative(min(optimal_value(ch) for ch in children_states(s)))
     #  ... i.e. minimising opponent's value
-    def value(self) -> int:
+    def leaf_value(self) -> int:
         """
         Returns the value of the current state from the current player's perspective.
         +1 : Winning state

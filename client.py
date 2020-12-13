@@ -23,7 +23,12 @@ def load_model_weights():
 def play_game():
     # use MCTS to play a game, and return training data
     # encode the data in a string format
-    game_history = selfplay.selfplay(net)
+    mcts = selfplay.MCTS(net)
+    game_history = mcts.selfplay()
+    ############# TODO #############
+    print(game_history)
+    import sys; sys.exit(0)
+    ################################
     return game_history
 
 def upload_data(string):
