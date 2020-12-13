@@ -22,16 +22,18 @@ class Node(game.GameState):
 
     def expand(self, net: model.Model):
         if self.terminated():
-            self.value = float(self.leaf_value())
+            self.value = - float(self.leaf_value())
         else:
             l = self.legal_actions()
             probs, value = net.predict(self)
+            nf = 1 / sum(probs[0][i] * l[i] for i in range(config.num_actions)) # normalising factor
             self.value = value[0][0]
             for i in range(config.num_actions):
                 if l[i]:
                     self.children[i] = Node(self.next_state(i))
-                    self.children[i].prob = probs[0][i]
+                    self.children[i].prob = probs[0][i] * nf
                     self.children[i].parent = self
+        self.value_sum += self.value
 
     def ucb_score(self):
         return self.value_sum / (self.visit + 1) + self.prob * sqrt(self.parent.visit / (1 + self.visit)) * config.pb_c_init
@@ -77,7 +79,7 @@ class MCTS():
             self.simulate(root)
         # self.print_tree(root)
         return [
-            root.children[i].visit/(root.visit-1) if i in root.children else 0
+            root.children[i].visit/(root.visit-1) if i in root.children else 0.0
             for i in range(config.num_actions)
         ]
 
@@ -105,15 +107,20 @@ class MCTS():
             lines.append(str(g.state) + "\t" + str(probs))
         return "\n".join(lines)+"\n"
 
-    def print_tree(self, n: Node, depth=0):
+    def print_tree(self, n: Node, depth=0, all=True):
         if n.visit:
-            print(depth*"\t" + f">> position: {n.state}, prob: {n.prob:0.2}, value: {n.value:0.2},"
-                            f"visit: {n.visit}, value_sum: {n.value_sum:0.2}")
+            a = ">>"
+        else:
+            a = "--"
+        if all or n.visit:
+            print(depth*"\t" + f"{a} position: {n.state}, prob: {n.prob:0.2}, value: {n.value:0.2},"
+                               f" visit: {n.visit}, value_sum: {n.value_sum:0.2}")
             for ch in n.children.values():
                 self.print_tree(ch, depth+1)
 
 if __name__ == "__main__":
     net = model.Model()
-    net.load("tmodel.h5")
     m = MCTS(net)
-    print(m.selfplay())
+    g = game.GameState()
+    g.state = [-1,1,0,1,1,0,0,-1,0]
+    print(m.get_probs(g))
