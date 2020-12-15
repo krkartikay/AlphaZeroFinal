@@ -5,7 +5,7 @@ import model
 import config
 
 import random
-from math import sqrt, log
+from math import sqrt, log, exp
 
 class Node(game.GameState):
     def __init__(self, *args, **kwargs):
@@ -22,7 +22,7 @@ class Node(game.GameState):
 
     def expand(self, net: model.Model):
         if self.terminated():
-            self.value = - float(self.leaf_value())
+            self.value = float(self.leaf_value())
         else:
             l = self.legal_actions()
             probs, value = net.predict(self)
@@ -34,9 +34,16 @@ class Node(game.GameState):
                     self.children[i].prob = probs[0][i] * nf
                     self.children[i].parent = self
         self.value_sum += self.value
+        self.visit = 1
+    
+    def avg_value(self):
+        if self.visit != 0:
+            return self.value_sum / self.visit
+        else:
+            return 0
 
     def ucb_score(self):
-        return self.value_sum / (self.visit + 1) + self.prob * sqrt(self.parent.visit / (1 + self.visit)) * config.pb_c_init
+        return self.avg_value() + self.prob * sqrt(self.parent.visit / (1 + self.visit)) * config.pb_c_init
         # * (config.pb_c_init + log((self.parent.visit + config.pb_c_base + 1) / config.pb_c_base))
 
 class MCTS():
@@ -63,7 +70,7 @@ class MCTS():
         move_history = []
         while not g.terminated():
             probs = self.get_probs(g)
-            history.append((g, probs))
+            history.append([g, probs, 0])
             # choose action acc to probs
             action = random.choices(list(range(config.num_actions)), probs)[0]
             move_history.append(action)
@@ -85,9 +92,9 @@ class MCTS():
 
     def simulate(self, n: Node):
         "goes upto one leaf state and evaluates it and backpropagates the value"
-        n.visit += 1
         if n.is_expanded():
             # choose best child node and recurse
+            n.visit += 1
             m = self.choose_child(n)
             val_child = - self.simulate(m)
             n.value_sum += val_child
@@ -103,7 +110,7 @@ class MCTS():
 
     def encode_history(self, history) -> str:
         lines = []
-        for g, probs in history:
+        for g, probs, val in history:
             lines.append(str(g.state) + "\t" + str(probs))
         return "\n".join(lines)+"\n"
 
@@ -121,6 +128,7 @@ class MCTS():
 if __name__ == "__main__":
     net = model.Model()
     m = MCTS(net)
-    g = game.GameState()
-    g.state = [-1,1,0,1,1,0,0,-1,0]
-    print(m.get_probs(g))
+    net.load("tmodel.h5")
+    print("="*60)
+    while True:
+        print(m.selfplay())

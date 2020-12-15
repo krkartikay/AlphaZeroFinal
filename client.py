@@ -25,10 +25,6 @@ def play_game():
     # encode the data in a string format
     mcts = selfplay.MCTS(net)
     game_history = mcts.selfplay()
-    ############# TODO #############
-    print(game_history)
-    import sys; sys.exit(0)
-    ################################
     return game_history
 
 def upload_data(string):

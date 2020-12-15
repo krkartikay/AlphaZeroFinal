@@ -61,20 +61,18 @@ class GameState:
         return np.array([self.state])
 
     # for minimax, optimal value is:
-    # optimal_value(s) = negative(min(optimal_value(ch) for ch in children_states(s)))
-    #  ... i.e. minimising opponent's value
+    # optimal_value(s) = max(optimal_value(ch) for ch in children_states(s))
+    #  ... i.e. maximising my action's value
     def leaf_value(self) -> int:
         """
         Returns the value of the current state from the current player's perspective.
-        +1 : Winning state
-        -1 : Losing state
+        +1 : This is a "won" state
+        -1 : This is a "lost" state
         """
         winner = self.winner()
-        to_play = self.player()
         if winner == 0:
             return 0
-        if to_play == winner:
-            raise RuntimeError("Shouldn't have happened!")
-            return +1 # cannot happen in tic-tac-toe
         else:
-            return -1
+            # in tic tac toe I don't need to check who won, because the player
+            # who made the last move must have won
+            return +1
