@@ -75,8 +75,18 @@ class MCTS():
             action = random.choices(list(range(config.num_actions)), probs)[0]
             move_history.append(action)
             g = g.next_state(action)
-        # log game outcome?
-        print(move_history, g.winner())
+        # history.append([g, [0.0]*9, 0])
+        # log game outcome
+        winner = g.winner()
+        print(move_history, winner)
+        # fill in the value function
+        if winner != 0:
+            for state in history:
+                g = state[0]
+                if g.player() == winner:
+                    state[2] = -1
+                else:
+                    state[2] = 1
         return self.encode_history(history)
 
     def get_probs(self, g: game.GameState):
@@ -111,7 +121,7 @@ class MCTS():
     def encode_history(self, history) -> str:
         lines = []
         for g, probs, val in history:
-            lines.append(str(g.state) + "\t" + str(probs))
+            lines.append(f"{g.state}\t{val}\t{probs}")
         return "\n".join(lines)+"\n"
 
     def print_tree(self, n: Node, depth=0, all=True):

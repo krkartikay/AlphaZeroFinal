@@ -68,4 +68,4 @@ while True:
     with open("evaluate.tsv", "a") as log:
         log.write(f"{win}\t{draw}\t{loss}\t{illegal}\n")
     print(f"Win: {win:3}\tDraw: {draw:3}\tLose: {loss:3}\tIllegal: {illegal:4}\t\t" +
-          f"Time taken: {(t2-t1)*1000/config.evaluate_num:0.1f} ms per game")
+          f"Time taken: {(t2-t1)*1000/config.num_evaluate:0.1f} ms per game")
