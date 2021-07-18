@@ -78,7 +78,7 @@ class MCTS():
         # history.append([g, [0.0]*9, 0])
         # log game outcome
         winner = g.winner()
-        print(move_history, winner)
+        # print(move_history, winner)
         # fill in the value function
         if winner != 0:
             for state in history:

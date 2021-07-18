@@ -9,24 +9,24 @@ import model
 
 import numpy as np
 
-net = model.Model()
-net.load()
+def train():
+    net = model.Model()
+    net.load()
 
-lines = open("training_data.log").readlines()
-data = [[eval(x) for x in line.strip().split('\t')]  for line in lines]
+    lines = open("training_data.log").readlines()
+    data = [[eval(x) for x in line.strip().split('\t')]  for line in lines]
 
-xs = [l[0] for l in data]
-values = [l[1] for l in data]
-probs = [l[2] for l in data]
+    data = data[-config.last_N_games:]
 
-xs = np.array(xs)
-values = np.array(values)
-probs = np.array(probs)
+    xs = [l[0] for l in data]
+    values = [l[1] for l in data]
+    probs = [l[2] for l in data]
 
-hist = net.train([xs, probs, values], config.train_epochs, True)
+    xs = np.array(xs)
+    values = np.array(values)
+    probs = np.array(probs)
 
-from matplotlib import pyplot as plt
-plt.plot(hist.history['loss'])
-plt.show()
+    hist = net.train([xs, probs, values], config.train_epochs)
+    net.store()
 
-net.store()
+    return hist.history['loss']

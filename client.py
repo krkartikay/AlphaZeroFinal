@@ -34,5 +34,6 @@ def upload_data(string):
 
 while True:
     load_model_weights()
-    data = play_game()
-    upload_data(data)
+    for i in range(config.client_play_games_num):
+        data = play_game()
+        upload_data(data)

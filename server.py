@@ -11,7 +11,6 @@
 import config
 
 import flask
-import io
 from filelock import FileLock
 
 app = flask.Flask(__name__)

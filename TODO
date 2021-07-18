@@ -3,6 +3,7 @@
 2. [x] SERVER
 3. [x] CLIENT
 -.   [x] Evaluate
-4. [ ] MCTS (SELF_PLAY)
-5. [ ] Training
-6. [ ] Visualisation
+4. [x] MCTS (SELF_PLAY)
+5. [x] Training
+6. [ ] Main Loop
+7. [ ] Visualisation - Implement Alpha Board!
