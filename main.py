@@ -4,6 +4,7 @@
 # then runs N client processes to keep generating data,
 # and then runs the training process when enough data has been generated
 
+from os import system
 import pandas as pd
 import streamlit as st
 import subprocess
@@ -13,6 +14,13 @@ import config
 import train
 
 "# Alpha Zero Dashboard"
+
+"0. Resetting everything!"
+
+with open("training_data.log",'w') as f:
+    f.write('')
+
+system('rm latest_weights.h5')
 
 "1. Starting server... "
 

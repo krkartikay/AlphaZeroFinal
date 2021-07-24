@@ -16,11 +16,10 @@ class Node(game.GameState):
         self.value_sum = 0.0 # Q * N = sum(value of leaf nodes)
         self.children = {}
         self.parent = None
-    
-    def is_expanded(self):
-        return len(self.children) > 0
+        self.is_expanded = False
 
     def expand(self, net: model.Model):
+        self.is_expanded = True
         if self.terminated():
             self.value = float(self.leaf_value())
         else:
@@ -87,7 +86,7 @@ class MCTS():
                     state[2] = -1
                 else:
                     state[2] = 1
-        return self.encode_history(history)
+        return history
 
     def get_probs(self, g: game.GameState):
         "runs N simulations and returns visit probabilities at root"
@@ -102,9 +101,11 @@ class MCTS():
 
     def simulate(self, n: Node):
         "goes upto one leaf state and evaluates it and backpropagates the value"
-        if n.is_expanded():
+        if n.is_expanded:
             # choose best child node and recurse
             n.visit += 1
+            if n.terminated(): # if we reach terminal state
+                return n.value
             m = self.choose_child(n)
             val_child = - self.simulate(m)
             n.value_sum += val_child

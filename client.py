@@ -25,7 +25,8 @@ def play_game():
     # encode the data in a string format
     mcts = selfplay.MCTS(net)
     game_history = mcts.selfplay()
-    return game_history
+    history_str = mcts.encode_history(game_history)
+    return history_str
 
 def upload_data(string):
     # send back training data to server

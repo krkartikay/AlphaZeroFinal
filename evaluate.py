@@ -32,7 +32,8 @@ def evaluate_net(exclude_illegal=False):
     while not g.terminated():
         actions = g.legal_actions()
         s = sum(actions)
-        if players[g.player()] == "nnet":
+        turn = i % 2
+        if players[turn] == "nnet":
             probs = net.predict(g)[0][0]
             if exclude_illegal:
                 probs = [probs[i] * actions[i] for i in range(len(actions))]
