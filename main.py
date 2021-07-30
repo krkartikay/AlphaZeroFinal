@@ -10,6 +10,8 @@ import streamlit as st
 import subprocess
 import time
 
+from collections import Counter
+
 import config
 import train
 
@@ -41,6 +43,7 @@ num = st.empty()
 training = st.empty()
 loss_graph = st.empty()
 eval_graph = st.empty()
+training_games_graph = st.empty()
 
 loss = []
 last_len = 0
@@ -49,12 +52,19 @@ while True:
     lines = open("training_data.log").readlines()
     num.write(f'Length of training data file: `{len(lines)}`')
     time.sleep(1)
+    training.write('')
     if len(lines) > config.train_after_games + last_len:
         training.write(f'Training now ...')
         losses = train.train()
-        training.empty()
         loss += losses
         loss_graph.line_chart(pd.DataFrame(loss, columns=["loss"]))
         last_len = len(lines)
-        eval_data = pd.read_csv(open("evaluate.tsv"),sep="\t")
-        eval_graph.line_chart(eval_data)
+    eval_data = pd.read_csv(open("evaluate.tsv"),sep="\t")
+    eval_graph.line_chart(eval_data)
+    game_results = [line.split('\t')[1] for line in lines if line.split('\t')[0]]
+    game_results_condensed = [Counter(game_results[i:i+config.train_after_games])
+                                for i in range(0, len(game_results), config.train_after_games)]
+    game_results_graph = {'First wins': [x['1'] for x in game_results_condensed],
+                            'Second wins': [x['-1'] for x in game_results_condensed],
+                            'Draw': [x['0'] for x in game_results_condensed]}
+    training_games_graph.line_chart(game_results_graph)
