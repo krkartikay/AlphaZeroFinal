@@ -6,35 +6,37 @@
 
 import numpy as np
 from typing import List
+import chess
 
-win_patterns = [
-    [0, 1, 2],  [3, 4, 5],  [6, 7, 8],  [0, 3, 6],
-    [1, 4, 7],  [2, 5, 8],  [0, 4, 8],  [2, 4, 6],
-]
-
+''' 
+    Represents state of the game (at any given time) : todo (edit this)
+'''
 class GameState:
 
+    '''
+        start the game fresh or copy other state
+    '''
     def __init__(self, other=None):
-        if other is not None:
-            self.state = other.state[:]  # Clone data
+        if other is None:
+            self.board = chess.Board()
         else:
-            self.state = [0,0,0, 0,0,0, 0,0,0]
-
+            self.board = chess.Board(other.board.fen())
+            
     def player(self) -> int:
-        if sum(x != 0 for x in self.state) % 2 == 0:
+        if self.board.turn:
             return 1
         else:
             return -1
 
     def winner(self):
-        for l in win_patterns:
-            a, b, c = l
-            if (self.state[a] == self.state[b] == self.state[c] and self.state[a] != 0):
-                return self.state[a]  # some player wins
-        if sum(x != 0 for x in self.state) == 9:
-            return 0  # DRAW
-        # no one wins
-        return None
+        outcome = self.board.outcome()
+        if outcome is None:
+            return None
+        
+        if outcome.termination == chess.Termination.CHECKMATE:
+            return (1 if outcome.winner else -1)
+
+        return 0
 
     def terminated(self) -> bool:
         if self.winner() is not None:
@@ -43,22 +45,53 @@ class GameState:
             return False
 
     def legal_actions(self) -> List[bool]:
-        if self.terminated():
-            return [False]*9
-        else:
-            return [x==0 for x in self.state]
+
+        moves = [False] * (64 * 64)
+
+        for move in self.board.legal_moves:
+            a = move.from_square
+            b = move.to_sqaure
+            idx = (a * 64) + b
+            moves[idx] = True
+
+        return moves
     
     def next_state(self, action: int):
-        if self.state[action] == 0:
-            g = GameState(self)
-            g.state[action] = self.player()
-            return g
-        else:
+        legal_actions = self.legal_actions()
+        
+        if not legal_actions[action]:
             raise RuntimeError("Illegal action")
-    
+
+        g = GameState(self)
+        
+        a = action // 64
+        b = action % 64
+
+        move = chess.Move(a,b)
+        g.board.push(move)
+
+        return g     
+
+    "Returns representation of state suitable for input to neural network"
     def to_image(self):
-        "Returns representation of state suitable for input to neural network"
-        return np.array([self.state])
+
+        planes = []
+
+        for i in range(1,7):
+            plane = [  
+                
+                [
+                    (1 if ((a * 8) + b) in self.board.pieces(chess.PieceType(i), True) else 0)
+                    -(1 if ((a * 8) + b) in self.board.pieces(chess.PieceType(i), False) else 0)
+                    for b in range(8)
+                ] 
+                
+                for a in range(8)
+            ] 
+
+            planes.append(plane)
+
+        return np.array([planes])
 
     # for minimax, optimal value is:
     # optimal_value(s) = max(optimal_value(ch) for ch in children_states(s))
