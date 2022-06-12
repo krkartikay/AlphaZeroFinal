@@ -12,7 +12,7 @@ decay = 1e-4
 train_epochs = 1000
 batch_size = 5000
 
-num_actions = 9
+num_actions = 64*64
 num_evaluate = 1000
 num_simulate = 20
 

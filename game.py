@@ -50,7 +50,7 @@ class GameState:
 
         for move in self.board.legal_moves:
             a = move.from_square
-            b = move.to_sqaure
+            b = move.to_square
             idx = (a * 64) + b
             moves[idx] = True
 
