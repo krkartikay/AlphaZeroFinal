@@ -21,10 +21,11 @@ class Model():
     built on top of keras functional API model.
     """
     def __init__(self):
-        inp_layer = keras.Input(shape=(9,))
-        l1 = keras.layers.Dense(50, activation="relu")(inp_layer)
+        inp_layer = keras.Input(shape=(6,8,8))
+        f = keras.layers.Flatten()(inp_layer)
+        l1 = keras.layers.Dense(50, activation="relu")(f)
         l2 = keras.layers.Dense(20, activation="relu")(l1)
-        prob_logits = keras.layers.Dense(9, activation="relu")(l2)
+        prob_logits = keras.layers.Dense(config.num_actions, activation="relu")(l2)
         prob_head = keras.layers.Activation("softmax")(prob_logits)
         value_head = keras.layers.Dense(1, activation="tanh")(l2)
         self.model = keras.Model(inputs=inp_layer, outputs=[prob_head, value_head])

@@ -67,6 +67,8 @@ class MCTS():
         g = game.GameState()
         history = []
         move_history = []
+        print("New game")
+        print(g.board, '\n')
         while not g.terminated():
             probs = self.get_probs(g)
             history.append([g, probs, 0])
@@ -74,6 +76,7 @@ class MCTS():
             action = random.choices(list(range(config.num_actions)), probs)[0]
             move_history.append(action)
             g = g.next_state(action)
+            print(g.board, '\n')
         # history.append([g, [0.0]*9, 0])
         # log game outcome
         winner = g.winner()

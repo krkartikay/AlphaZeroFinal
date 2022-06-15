@@ -1,4 +1,5 @@
 *.py[co]
+*.lock
 *.log
 *.h5
 *.tsv
