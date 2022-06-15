@@ -26,16 +26,16 @@ system('rm latest_weights.h5')
 
 "1. Starting server... "
 
-subprocess.Popen(["python", "server.py"])
+subprocess.Popen(["python3", "server.py"])
 
 f"2. Starting {config.client_processes_num} client processes..."
 
 for i in range(config.client_processes_num):
-    subprocess.Popen(["python", "client.py"])
+    subprocess.Popen(["python3", "client.py"])
 
 "3. Starting Evaluator..."
 
-subprocess.Popen(["python", "evaluate.py"])
+subprocess.Popen(["python3", "evaluate.py"])
 
 "4. Training! Sit back and relax..... "
 
