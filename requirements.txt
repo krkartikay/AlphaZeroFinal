@@ -1,0 +1,8 @@
+chess==1.10.0
+filelock==3.12.4
+Flask==2.2.2
+numpy==1.24.3
+pandas==1.5.3
+Requests==2.31.0
+streamlit==1.27.2
+tensorflow==2.14.0
