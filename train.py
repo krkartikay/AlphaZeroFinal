@@ -18,7 +18,7 @@ def train():
 
     data = data[-config.last_N_games:]
 
-    xs = [l[0] for l in data]
+    xs = [l[0][0] for l in data]
     values = [l[1] for l in data]
     probs = [l[2] for l in data]
 
@@ -26,7 +26,18 @@ def train():
     values = np.array(values)
     probs = np.array(probs)
 
+    print(xs.shape)
+    print(values.shape)
+    print(probs.shape)
+
     hist = net.train([xs, probs, values], config.train_epochs)
     net.store()
 
     return hist.history['loss']
+
+def main():
+    losses = train()
+    print(losses)
+
+if __name__ == "__main__":
+    main()

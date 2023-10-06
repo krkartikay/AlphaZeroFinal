@@ -30,7 +30,7 @@ class Model():
         value_head = keras.layers.Dense(1, activation="tanh")(l2)
         self.model = keras.Model(inputs=inp_layer, outputs=[prob_head, value_head])
         # self.pred_model = keras.Model(inputs=inp_layer, outputs=[prob_head, value_head])
-        self.model.compile(optimizer=keras.optimizers.SGD(learning_rate=config.learning_rate, decay=config.decay), loss=[
+        self.model.compile(optimizer=keras.optimizers.SGD(learning_rate=config.learning_rate), loss=[
             keras.losses.KLDivergence(),
             keras.losses.MeanSquaredError()
         ])

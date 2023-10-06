@@ -6,6 +6,8 @@ import config
 
 import random
 from math import sqrt, log, exp
+import numpy as np
+import tensorflow as tf
 
 class Node(game.GameState):
     def __init__(self, *args, **kwargs):
@@ -24,8 +26,10 @@ class Node(game.GameState):
             self.value = float(self.leaf_value())
         else:
             l = self.legal_actions()
+            l = np.array(l)
             probs, value = net.predict(self)
-            nf = 1 / sum(probs[0][i] * l[i] for i in range(config.num_actions)) # normalising factor
+            result_sum = tf.reduce_sum(probs[0] * l)
+            nf = 1 / result_sum
             self.value = value[0][0]
             for i in range(config.num_actions):
                 if l[i]:
@@ -125,7 +129,7 @@ class MCTS():
     def encode_history(self, history) -> str:
         lines = []
         for g, probs, val in history:
-            lines.append(f"{g.state}\t{val}\t{probs}")
+            lines.append(f"{g.to_image().tolist()}\t{val}\t{probs}")
         return "\n".join(lines)+"\n"
 
     def print_tree(self, n: Node, depth=0, all=True):

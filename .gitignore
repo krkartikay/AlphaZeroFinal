@@ -4,5 +4,7 @@
 *.h5
 *.tsv
 *.csv
+*.pstats
 __pycache__/
 .vscode/
+venv/
