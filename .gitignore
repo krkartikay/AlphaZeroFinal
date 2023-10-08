@@ -2,6 +2,7 @@
 *.lock
 *.log
 *.h5
+*.pth
 *.tsv
 *.csv
 *.pstats

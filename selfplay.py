@@ -7,7 +7,7 @@ import config
 import random
 from math import sqrt, log, exp
 import numpy as np
-import tensorflow as tf
+import torch
 
 class Node(game.GameState):
     def __init__(self, *args, **kwargs):
@@ -26,11 +26,11 @@ class Node(game.GameState):
             self.value = float(self.leaf_value())
         else:
             l = self.legal_actions()
-            l = np.array(l)
             probs, value = net.predict(self)
-            result_sum = tf.reduce_sum(probs[0] * l)
+            l = torch.Tensor(l).to(probs.device)
+            result_sum = (probs[0] * l).sum()
             nf = 1 / result_sum
-            self.value = value[0][0]
+            self.value = value[0][0].item()
             for i in range(config.num_actions):
                 if l[i]:
                     self.children[i] = Node(self.next_state(i))
@@ -46,7 +46,9 @@ class Node(game.GameState):
             return 0
 
     def ucb_score(self):
-        return self.avg_value() + self.prob * sqrt(self.parent.visit / (1 + self.visit)) * config.pb_c_init
+        avg_val = self.avg_value()
+        exp_score = self.prob * sqrt(self.parent.visit / (1 + self.visit)) * config.pb_c_init
+        return avg_val + exp_score
         # * (config.pb_c_init + log((self.parent.visit + config.pb_c_base + 1) / config.pb_c_base))
 
 class MCTS():
@@ -123,7 +125,7 @@ class MCTS():
             return n.value
 
     def choose_child(self, n: Node):
-        score, node = max(((m.ucb_score(), m) for m in n.children.values()), key=lambda x: x[0])
+        score, node = max(((m.ucb_score().item(), m) for m in n.children.values()), key=lambda x: x[0])
         return node
 
     def encode_history(self, history) -> str:

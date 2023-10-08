@@ -13,8 +13,8 @@ train_epochs = 1000
 batch_size = 5000
 
 num_actions = 64*64
-num_evaluate = 1000
-num_simulate = 20
+num_evaluate = 10
+num_simulate = 100
 
 pb_c_init = 1.25
 pb_c_base = 20000

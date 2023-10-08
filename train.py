@@ -8,9 +8,11 @@ import config
 import model
 
 import numpy as np
+import torch
 
 def train():
-    net = model.Model()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    net = model.Model(device)
     net.load()
 
     lines = open("training_data.log").readlines()

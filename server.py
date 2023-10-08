@@ -5,7 +5,7 @@
 #  - POST /train New training data
 
 # Communicates with training process (train.py) via files:
-#  - latest_weights.h5 : Latest model weights
+#  - latest_weights.pth : Latest model weights
 #  - training_data.log : Training data sent by clients
 
 import config
@@ -17,12 +17,12 @@ app = flask.Flask(__name__)
 
 @app.route("/weights", methods=("GET",))
 def get_weights():
-    # send file 'latest_weights.h5'
-    with FileLock("latest_weights.h5.lock"):
-        # return flask.send_file(io.BytesIO(open("latest_weights.h5", "rb").read()),
-        #                         attachment_filename="latest_weights.h5",
+    # send file 'latest_weights.pth'
+    with FileLock("latest_weights.pth.lock"):
+        # return flask.send_file(io.BytesIO(open("latest_weights.pth", "rb").read()),
+        #                         attachment_filename="latest_weights.pth",
         #                         mimetype="application/octet-stream")
-        return open("latest_weights.h5", "rb").read()
+        return open("latest_weights.pth", "rb").read()
 
 @app.route("/train", methods=("POST",))
 def post_training_data():
