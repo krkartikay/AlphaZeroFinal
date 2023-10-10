@@ -26,7 +26,7 @@ class Model(nn.Module):
         self.prob_head = nn.Softmax(dim=1)
         self.value_head = nn.Linear(20, 1)
         self.value_activation = nn.Tanh()
-        self.optimizer = optim.SGD(self.parameters(), lr=config.learning_rate)
+        self.optimizer = optim.Adam(self.parameters(), lr=config.learning_rate)
         self.loss1 = nn.KLDivLoss()
         self.loss2 = nn.MSELoss()
         self.to(self.device)
@@ -52,6 +52,7 @@ class Model(nn.Module):
         for epoch in range(epochs):
             self.optimizer.zero_grad()
             pred_probs, pred_values = self.forward(xs)
+            pred_values = pred_values.view((-1,))
             loss = self.loss1(pred_probs, probs) + self.loss2(pred_values, values)
             print(loss)
             loss_history.append(loss.item())

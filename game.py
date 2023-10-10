@@ -68,6 +68,8 @@ class GameState:
         b = action % 64
 
         move = chess.Move(a,b)
+        if chess.square_rank(b) == (7 if g.player() == 1 else 0) and g.board.piece_type_at(a) == chess.PAWN:
+            move = chess.Move(a,b,chess.QUEEN)
         g.board.push(move)
 
         return g     

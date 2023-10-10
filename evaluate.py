@@ -7,14 +7,19 @@
 import game
 import model
 import config
+import selfplay
 
 import time
 import random
 import requests
 import tempfile
 
-with open("evaluate.tsv", "w") as log:
-    log.write("win\tdraw\tloss\tillegal\n")
+try:
+    log = open('evaluate.tsv', 'r')
+    log.close()
+except FileNotFoundError:
+    with open("evaluate.tsv", "w") as log:
+        log.write("win\tdraw\tloss\tillegal\n")
 
 net = model.Model()
 
@@ -25,7 +30,7 @@ def load_model_weights():
     net.load(tname)
 
 def evaluate_net(exclude_illegal=False):
-    players = ["random", "nnet"]
+    players = ["random", "mcts"]
     random.shuffle(players)
     g = game.GameState()
     i = 0
@@ -33,18 +38,23 @@ def evaluate_net(exclude_illegal=False):
         actions = g.legal_actions()
         s = sum(actions)
         turn = i % 2
+        print('player: ', players[turn])
         if players[turn] == "nnet":
             probs = net.predict(g)[0][0]
             if exclude_illegal:
                 probs = [probs[i] * actions[i] for i in range(len(actions))]
                 s = sum(probs)
                 probs = [p/s for p in probs]
+        elif players[turn] == 'mcts':
+            m = selfplay.MCTS(net)
+            probs = m.get_probs(g)
         else:
             probs = [x/s for x in actions]
         action = random.choices(list(range(len(actions))), probs)[0]
         if actions[action] == False:
             return "illegal"
         g = g.next_state(action)
+        print(g.board)
         i += 1
     winner = g.winner()
     if winner == 1:
@@ -62,11 +72,11 @@ while True:
         r = evaluate_net(exclude_illegal=False)
         d[r] = d.get(r, 0) + 1
     t2 = time.time()
-    win     = d.get('nnet', 0)
+    win     = d.get('mcts', 0)
     draw    = d.get('draw', 0)
     loss    = d.get('random', 0)
     illegal = d.get('illegal', 0)
     with open("evaluate.tsv", "a") as log:
         log.write(f"{win}\t{draw}\t{loss}\t{illegal}\n")
-    # print(f"Win: {win:3}\tDraw: {draw:3}\tLose: {loss:3}\tIllegal: {illegal:4}\t\t" +
-    #       f"Time taken: {(t2-t1)*1000/config.num_evaluate:0.1f} ms per game")
+    print(f"Win: {win:3}\tDraw: {draw:3}\tLose: {loss:3}\tIllegal: {illegal:4}\t\t" +
+          f"Time taken: {(t2-t1)*1000/config.num_evaluate:0.1f} ms per game")
