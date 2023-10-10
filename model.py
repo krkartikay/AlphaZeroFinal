@@ -43,9 +43,11 @@ class Model(nn.Module):
         image_tensor = torch.Tensor(gamestate.to_image()).to(self.device)
         return self.forward(image_tensor)
 
-    def train_model(self, data, epochs=100, verbose=False):
+    def train(self, data, epochs=100, verbose=False):
         xs, probs, values = data
-        xs, probs, values = xs.to(self.device), probs.to(self.device), values.to(self.device)
+        xs = torch.Tensor(xs).to(self.device)
+        probs = torch.Tensor(probs).to(self.device)
+        values = torch.Tensor(values).to(self.device)
         loss_history = []
         for epoch in range(epochs):
             self.optimizer.zero_grad()

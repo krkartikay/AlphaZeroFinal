@@ -35,7 +35,7 @@ def train():
     hist = net.train([xs, probs, values], config.train_epochs)
     net.store()
 
-    return hist.history['loss']
+    return hist
 
 def main():
     losses = train()

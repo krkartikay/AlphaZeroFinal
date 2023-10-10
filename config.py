@@ -14,12 +14,12 @@ batch_size = 5000
 
 num_actions = 64*64
 num_evaluate = 10
-num_simulate = 100
+num_simulate = 10
 
 pb_c_init = 1.25
 pb_c_base = 20000
 
-train_after_games = 500
+train_after_games = 1
 last_N_games = 50000
-client_processes_num = 4
+client_processes_num = 15
 client_play_games_num = 10
