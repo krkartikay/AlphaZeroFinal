@@ -23,11 +23,11 @@ class Model(nn.Module):
         self.fc1 = nn.Linear(6*8*8, 50)
         self.fc2 = nn.Linear(50, 20)
         self.prob_logits = nn.Linear(20, config.num_actions)
-        self.prob_head = nn.Softmax(dim=1)
+        self.prob_head = nn.LogSoftmax(dim=1)
         self.value_head = nn.Linear(20, 1)
         self.value_activation = nn.Tanh()
         self.optimizer = optim.Adam(self.parameters(), lr=config.learning_rate)
-        self.loss1 = nn.KLDivLoss()
+        self.loss1 = nn.KLDivLoss(reduction='batchmean')
         self.loss2 = nn.MSELoss()
         self.to(self.device)
 
@@ -35,13 +35,15 @@ class Model(nn.Module):
         x = self.flatten(x)
         x = nn.functional.relu(self.fc1(x))
         x = nn.functional.relu(self.fc2(x))
-        prob = self.prob_head(self.prob_logits(x))
+        log_prob = self.prob_head(self.prob_logits(x))
         value = self.value_activation(self.value_head(x))
-        return prob, value
+        return log_prob, value
 
     def predict(self, gamestate):
         image_tensor = torch.Tensor(gamestate.to_image()).to(self.device)
-        return self.forward(image_tensor)
+        log_probs, value = self.forward(image_tensor)
+        probs = torch.exp(log_probs)
+        return probs, value
 
     def train(self, data, epochs=100, verbose=False):
         xs, probs, values = data
@@ -51,9 +53,9 @@ class Model(nn.Module):
         loss_history = []
         for epoch in range(epochs):
             self.optimizer.zero_grad()
-            pred_probs, pred_values = self.forward(xs)
+            pred_log_probs, pred_values = self.forward(xs)
             pred_values = pred_values.view((-1,))
-            loss = self.loss1(pred_probs, probs) + self.loss2(pred_values, values)
+            loss = self.loss1(pred_log_probs, probs) + self.loss2(pred_values, values)
             print(loss)
             loss_history.append(loss.item())
             loss.backward()

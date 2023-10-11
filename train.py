@@ -15,10 +15,13 @@ def train():
     net = model.Model(device)
     net.load()
 
+    print("loading training data")
+
     lines = open("training_data.log").readlines()
+    lines = lines[-config.last_N_games:]
     data = [[eval(x) for x in line.strip().split('\t')]  for line in lines]
 
-    data = data[-config.last_N_games:]
+    print("done loading")
 
     xs = [l[0][0] for l in data]
     values = [l[1] for l in data]
@@ -39,7 +42,7 @@ def train():
 
 def main():
     losses = train()
-    print(losses)
+    # print(losses)
 
 if __name__ == "__main__":
     main()
