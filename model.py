@@ -55,9 +55,11 @@ class Model(nn.Module):
             self.optimizer.zero_grad()
             pred_log_probs, pred_values = self.forward(xs)
             pred_values = pred_values.view((-1,))
-            loss = self.loss1(pred_log_probs, probs) + self.loss2(pred_values, values)
-            print(loss)
-            loss_history.append(loss.item())
+            loss1 = self.loss1(pred_log_probs, probs)
+            loss2 = self.loss2(pred_values, values)
+            loss = loss1 + loss2
+            print(f"total loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
+            loss_history.append((loss.item(), loss1.item(), loss2.item()))
             loss.backward()
             self.optimizer.step()
         return loss_history

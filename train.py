@@ -9,17 +9,22 @@ import model
 
 import numpy as np
 import torch
+import json
 
 def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     net = model.Model(device)
-    net.load()
+    try:
+        net.load()
+    except FileNotFoundError:
+        net.store()
+        print("Initialised new model")
 
     print("loading training data")
 
     lines = open("training_data.log").readlines()
     lines = lines[-config.last_N_games:]
-    data = [[eval(x) for x in line.strip().split('\t')]  for line in lines]
+    data = [[json.loads(x) for x in line.strip().split('\t')]  for line in lines]
 
     print("done loading")
 
