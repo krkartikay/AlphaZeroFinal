@@ -116,6 +116,7 @@ class MCTS():
             # choose best child node and recurse
             n.visit += 1
             if n.terminated(): # if we reach terminal state
+                n.value_sum += n.value
                 return n.value
             m = self.choose_child(n)
             val_child = - self.simulate(m)
@@ -142,7 +143,7 @@ class MCTS():
         else:
             a = "--"
         if all or n.visit:
-            print(depth*"\t" + f"{a} position: {n.state}, prob: {n.prob:0.2}, value: {n.value:0.2},"
+            print(depth*"\t" + f"{a} position: {n.board}, prob: {n.prob:0.2}, value: {n.value:0.2},"
                                f" visit: {n.visit}, value_sum: {n.value_sum:0.2}")
             for ch in n.children.values():
                 self.print_tree(ch, depth+1)

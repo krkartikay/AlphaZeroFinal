@@ -56,7 +56,7 @@ while True:
     if len(lines) > config.train_after_games + last_len:
         training.write(f'Training now ...')
         losses = train.train()
-        loss += losses
+        loss += [x[0] for x in losses]
         loss_graph.line_chart(pd.DataFrame(loss, columns=["loss"]))
         last_len = len(lines)
     eval_data = pd.read_csv(open("evaluate.tsv"),sep="\t")
