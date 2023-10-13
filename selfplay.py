@@ -78,7 +78,7 @@ class MCTS():
         while not g.terminated():
             probs = self.get_probs(g)
             p = np.array(probs)
-            p = p ** (1/config.temp)
+            p = p ** (1/config.temperature)
             history.append([g, probs, 0])
             # choose action acc to probs
             action = random.choices(list(range(config.num_actions)), p)[0]
@@ -134,7 +134,7 @@ class MCTS():
         scores = [m.ucb_score().item() for m in n.children.values()]
 
         # Compute softmax probabilities adjusted by temperature with max subtraction for stability
-        scores_adjusted = (scores - np.max(scores)) / config.temp
+        scores_adjusted = (scores - np.max(scores)) / config.temperature
         scores_exp = np.exp(scores_adjusted)
         probabilities = scores_exp / np.sum(scores_exp)
 

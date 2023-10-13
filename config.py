@@ -13,10 +13,13 @@ train_epochs = 100
 batch_size = 5000
 
 num_actions = 64*64
-num_evaluate = 100
+num_evaluate = 1
 num_simulate = 11
 
-pb_c_init = 5.0
+eval_verbose = True
+eval_player = 'mcts'
+
+pb_c_init = 1.25
 pb_c_base = 20000
 
 train_after_games = 1
@@ -24,4 +27,4 @@ last_N_games = 50000
 client_processes_num = 8
 client_play_games_num = 10
 
-temp = 2
+temperature = 1.0

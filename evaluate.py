@@ -14,14 +14,12 @@ import random
 import requests
 import tempfile
 
-verbose = False
-
 try:
     log = open('evaluate.tsv', 'r')
     log.close()
 except FileNotFoundError:
     with open("evaluate.tsv", "w") as log:
-        log.write("win\tdraw\tloss\tillegal\tmoves\n")
+        log.write("win\tdraw\tloss\tillegal\tmoves\ttime_taken_ms\n")
 
 net = model.Model()
 
@@ -31,16 +29,17 @@ def load_model_weights():
     open(tname, "wb").write(data.content)
     net.load(tname)
 
-def evaluate_net(exclude_illegal=False):
-    players = ["random", "nnet"]
+def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
+    players = ["random", eval_player]
     random.shuffle(players)
     g = game.GameState()
     i = 0
+    t1 = time.time()
     while not g.terminated():
         actions = g.legal_actions()
         s = sum(actions)
         turn = i % 2
-        if verbose:
+        if config.eval_verbose:
             print('player: ', players[turn])
         if players[turn] == "nnet":
             probs = net.predict(g)[0][0]
@@ -55,36 +54,37 @@ def evaluate_net(exclude_illegal=False):
             probs = [x/s for x in actions]
         action = random.choices(list(range(len(actions))), probs)[0]
         if actions[action] == False:
-            return i, "illegal"
+            t2 = time.time()
+            return i, "illegal", (t2-t1)/i
         g = g.next_state(action)
-        if verbose:
+        if config.eval_verbose:
             print(g.board)
         i += 1
     winner = g.winner()
+    t2 = time.time()
     if winner == 1:
-        return i, players[0]
+        return i, players[0], (t2-t1)/i
     elif winner == -1:
-        return i, players[1]
+        return i, players[1], (t2-t1)/i
     else:
-        return i, "draw"
+        return i, "draw", (t2-t1)/i
 
 while True:
     load_model_weights()
     d = {}
-    t1 = time.time()
+    eval_player = config.eval_player
     for i in range(config.num_evaluate):
-        results = evaluate_net(exclude_illegal=False)
-        num_moves, r = results
-        d[r] = d.get(r, 0) + 1
+        results = evaluate_net(eval_player, exclude_illegal=False)
+        num_moves, winner, time_taken = results
+        d[winner] = d.get(winner, 0) + 1
         d['moves'] = d.get('moves', 0) + num_moves
         print(results, d)
-    t2 = time.time()
-    win     = d.get('nnet', 0)
+    win     = d.get(eval_player, 0)
     draw    = d.get('draw', 0)
     loss    = d.get('random', 0)
     illegal = d.get('illegal', 0)
     moves = d.get('moves', 0) / config.num_evaluate
     with open("evaluate.tsv", "a") as log:
-        log.write(f"{win}\t{draw}\t{loss}\t{illegal}\t{moves}\n")
+        log.write(f"{win}\t{draw}\t{loss}\t{illegal}\t{moves}\t{time_taken*1000:0.4f}\n")
     # print(f"Win: {win:3}\tDraw: {draw:3}\tLose: {loss:3}\tIllegal: {illegal:4}\t\t" +
     #       f"Time taken: {(t2-t1)*1000/config.num_evaluate:0.1f} ms per game")
