@@ -93,6 +93,8 @@ class GameState:
 
             planes.append(plane)
 
+        player_plane = [[self.player() for b in range(8)] for a in range(8)] 
+        planes.append(player_plane)
         return np.array([planes])
 
     # for minimax, optimal value is:

@@ -22,7 +22,9 @@ def train():
 
     print("loading training data")
 
-    lines = open("training_data.log").readlines()
+    with open("training_data.log", "r") as f:
+        lines = f.readlines()
+
     lines = lines[-config.last_N_games:]
     data = [[json.loads(x) for x in line.strip().split('\t')]  for line in lines]
 
@@ -45,8 +47,22 @@ def train():
 
     return hist
 
+import gc
+
 def main():
+    try:
+        log = open('loss.tsv', 'r')
+        log.close()
+    except FileNotFoundError:
+        with open("loss.tsv", "w") as log:
+            log.write("total\tprob\tvalue\n")
+    #while True:
     losses = train()
+    with open("loss.tsv", "a") as log:
+        for total, prob, value in losses:
+            log.write(f"{total}\t{prob}\t{value}\n")
+    # gc.collect()
+    # torch.cuda.empty_cache()
     # print(losses)
 
 if __name__ == "__main__":

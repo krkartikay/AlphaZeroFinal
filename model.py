@@ -20,13 +20,13 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device #
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(6*8*8, 50)
-        self.fc2 = nn.Linear(50, 20)
-        self.prob_logits = nn.Linear(20, config.num_actions)
+        self.fc1 = nn.Linear(7*8*8, 64*64)
+        self.fc2 = nn.Linear(64*64, 64*64)
+        self.prob_logits = nn.Linear(64*64, config.num_actions)
         torch.nn.init.uniform_(self.prob_logits.weight, -0.01, 0.01)
         torch.nn.init.uniform_(self.prob_logits.bias, -0.01, 0.01)
         self.prob_head = nn.LogSoftmax(dim=1)
-        self.value_head = nn.Linear(20, 1)
+        self.value_head = nn.Linear(64*64, 1)
         torch.nn.init.uniform_(self.value_head.weight, -0.01, 0.01)
         torch.nn.init.uniform_(self.value_head.bias, -0.01, 0.01)
         self.value_activation = nn.Tanh()
@@ -62,7 +62,7 @@ class Model(nn.Module):
             loss1 = self.loss1(pred_log_probs, probs)
             loss2 = self.loss2(pred_values, values)
             loss = loss1 + loss2
-            print(f"total loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
+            print(f"(#{epoch})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
             loss_history.append((loss.item(), loss1.item(), loss2.item()))
             loss.backward()
             self.optimizer.step()
@@ -70,6 +70,7 @@ class Model(nn.Module):
 
     def load(self, filename="latest_weights.pth"):
         self.load_state_dict(torch.load(filename))
+        self.to(self.device)
 
     def store(self, filename="latest_weights.pth"):
         torch.save(self.state_dict(), filename)

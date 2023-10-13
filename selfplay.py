@@ -77,14 +77,16 @@ class MCTS():
         print(g.board, '\n')
         while not g.terminated():
             probs = self.get_probs(g)
+            p = np.array(probs)
+            p = p ** (1/config.temp)
             history.append([g, probs, 0])
             # choose action acc to probs
-            action = random.choices(list(range(config.num_actions)), probs)[0]
+            action = random.choices(list(range(config.num_actions)), p)[0]
             move_history.append(action)
             g = g.next_state(action)
             print(g.board)
-            print(g.board.fen(), action)
             print()
+            # print(g.board.fen(), action)
         # history.append([g, [0.0]*9, 0])
         # log game outcome
         winner = g.winner()
@@ -128,7 +130,19 @@ class MCTS():
             return n.value
 
     def choose_child(self, n: Node):
-        score, node = max(((m.ucb_score().item(), m) for m in n.children.values()), key=lambda x: x[0])
+        # Get the scores in a list
+        scores = [m.ucb_score().item() for m in n.children.values()]
+
+        # Compute softmax probabilities adjusted by temperature with max subtraction for stability
+        scores_adjusted = (scores - np.max(scores)) / config.temp
+        scores_exp = np.exp(scores_adjusted)
+        probabilities = scores_exp / np.sum(scores_exp)
+
+        # Sample from the distribution
+        index = np.random.choice(len(scores), p=probabilities)
+
+        score = scores[index]
+        node = list(n.children.values())[index]
         return node
 
     def encode_history(self, history) -> str:
