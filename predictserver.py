@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 hits = []
 hits_lock = threading.Lock()
 
-m = model.Model()
+m = model.Model('cuda')
 m.load()
 app = flask.Flask(__name__)
 
