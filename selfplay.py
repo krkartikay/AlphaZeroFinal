@@ -28,13 +28,13 @@ class Node(game.GameState):
             l = self.legal_actions()
             probs, value = net.predict(self)
             l = torch.Tensor(l).to(probs.device)
-            result_sum = (probs[0] * l).sum()
+            result_sum = (probs * l).sum()
             nf = 1 / result_sum
-            self.value = value[0][0].item()
+            self.value = value[0].item()
             for i in range(config.num_actions):
                 if l[i]:
                     self.children[i] = Node(self.next_state(i))
-                    self.children[i].prob = probs[0][i] * nf
+                    self.children[i].prob = probs[i] * nf
                     self.children[i].parent = self
         self.value_sum += self.value
         self.visit = 1

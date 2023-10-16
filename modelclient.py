@@ -10,7 +10,7 @@ class Model:
         response = requests.get(f"{self.server_url}/predict", json=image.tolist())
         
         if response.status_code == 200:
-            return response.json()
+            return response.json().get("prediction")
         else:
             raise Exception("Error occurred during prediction: {}".format(response.json().get("error")))
 
