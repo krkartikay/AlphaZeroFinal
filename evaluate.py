@@ -13,6 +13,7 @@ import time
 import random
 import requests
 import tempfile
+import modelclient
 
 try:
     log = open('evaluate.tsv', 'r')
@@ -21,7 +22,7 @@ except FileNotFoundError:
     with open("evaluate.tsv", "w") as log:
         log.write("win\tdraw\tloss\tillegal\tmoves\ttime_taken_ms\n")
 
-net = model.Model()
+net = modelclient.Model()
 
 def load_model_weights():
     data = requests.get(config.server_address + "/weights")
@@ -53,13 +54,13 @@ def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
         else:
             probs = [x/s for x in actions]
         action = random.choices(list(range(len(actions))), probs)[0]
+        i += 1
         if actions[action] == False:
             t2 = time.time()
             return i, "illegal", (t2-t1)/i
         g = g.next_state(action)
         if config.eval_verbose:
             print(g.board)
-        i += 1
     winner = g.winner()
     t2 = time.time()
     if winner == 1:
@@ -70,7 +71,7 @@ def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
         return i, "draw", (t2-t1)/i
 
 while True:
-    load_model_weights()
+    # load_model_weights()
     d = {}
     eval_player = config.eval_player
     for i in range(config.num_evaluate):

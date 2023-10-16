@@ -21,7 +21,11 @@ class Model(nn.Module):
         self.device = device #
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(7*8*8, 64*64)
+        self.ln1 = nn.LayerNorm(64*64)
         self.fc2 = nn.Linear(64*64, 64*64)
+        self.ln2 = nn.LayerNorm(64*64)
+        self.fc3 = nn.Linear(64*64, 64*64)
+        self.ln3 = nn.LayerNorm(64*64)
         self.prob_logits = nn.Linear(64*64, config.num_actions)
         torch.nn.init.uniform_(self.prob_logits.weight, -0.01, 0.01)
         torch.nn.init.uniform_(self.prob_logits.bias, -0.01, 0.01)
@@ -37,17 +41,22 @@ class Model(nn.Module):
 
     def forward(self, x):
         x = self.flatten(x)
-        x = nn.functional.relu(self.fc1(x))
-        x = nn.functional.relu(self.fc2(x))
+        x = nn.functional.relu(self.ln1(self.fc1(x)))
+        x = nn.functional.relu(self.ln1(self.fc2(x)))
+        x = nn.functional.relu(self.ln1(self.fc3(x)))
         log_prob = self.prob_head(self.prob_logits(x))
         value = self.value_activation(self.value_head(x))
         return log_prob, value
 
-    def predict(self, gamestate):
-        image_tensor = torch.Tensor(gamestate.to_image()).to(self.device)
-        log_probs, value = self.forward(image_tensor)
-        probs = torch.exp(log_probs)
+    def predict_image(self, image):
+        image_tensor = torch.Tensor(image).to(self.device)
+        with torch.no_grad():
+            log_probs, value = self.forward(image_tensor)
+            probs = torch.exp(log_probs)
         return probs, value
+
+    def predict(self, gamestate):
+        return self.predict_image(gamestate.to_image())
 
     def train(self, data, epochs=100, verbose=False):
         xs, probs, values = data
