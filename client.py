@@ -5,7 +5,7 @@
 # with the MCTS algorithm, thereby generating training data, which it
 # reports to the server upon termination of the game.
 
-import model
+import modelclient as model
 import config
 import selfplay
 
@@ -34,7 +34,7 @@ def upload_data(string):
     assert(resp.content == b'"OK"\n')
 
 while True:
-    load_model_weights()
+    # load_model_weights()
     for i in range(config.client_play_games_num):
         data = play_game()
         upload_data(data)
