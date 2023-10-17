@@ -15,10 +15,10 @@ import requests
 import tempfile
 
 try:
-    log = open('evaluate.tsv', 'r')
+    log = open('evaluate_mcts.tsv', 'r')
     log.close()
 except FileNotFoundError:
-    with open("evaluate.tsv", "w") as log:
+    with open("evaluate_mcts.tsv", "w") as log:
         log.write("win\tdraw\tloss\tillegal\tmoves\ttime_taken_ms\n")
 
 net = model.Model()
@@ -29,7 +29,7 @@ def load_model_weights():
     open(tname, "wb").write(data.content)
     net.load(tname)
 
-def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
+def evaluate_net(eval_player = 'mcts', exclude_illegal=False):
     players = ["random", eval_player]
     random.shuffle(players)
     g = game.GameState()
@@ -39,8 +39,7 @@ def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
         actions = g.legal_actions()
         s = sum(actions)
         turn = i % 2
-        if config.eval_verbose:
-            print('player: ', players[turn])
+        print('player: ', players[turn])
         if players[turn] == "nnet":
             probs = net.predict(g)[0][0]
             if exclude_illegal:
@@ -58,8 +57,7 @@ def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
             t2 = time.time()
             return i, "illegal", (t2-t1)/i
         g = g.next_state(action)
-        if config.eval_verbose:
-            print(g.board)
+        print(g.board)
     winner = g.winner()
     t2 = time.time()
     if winner == 1:
@@ -72,8 +70,8 @@ def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
 while True:
     load_model_weights()
     d = {}
-    eval_player = config.eval_player
-    for i in range(config.num_evaluate):
+    eval_player = "mcts"
+    for i in range(10):
         results = evaluate_net(eval_player, exclude_illegal=False)
         num_moves, winner, time_taken = results
         d[winner] = d.get(winner, 0) + 1
@@ -84,7 +82,7 @@ while True:
     loss    = d.get('random', 0)
     illegal = d.get('illegal', 0)
     moves = d.get('moves', 0) / config.num_evaluate
-    with open("evaluate.tsv", "a") as log:
+    with open("evaluate_mcts.tsv", "a") as log:
         log.write(f"{win}\t{draw}\t{loss}\t{illegal}\t{moves}\t{time_taken*1000:0.4f}\n")
     # print(f"Win: {win:3}\tDraw: {draw:3}\tLose: {loss:3}\tIllegal: {illegal:4}\t\t" +
     #       f"Time taken: {(t2-t1)*1000/config.num_evaluate:0.1f} ms per game")

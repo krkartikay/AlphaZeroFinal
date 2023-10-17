@@ -11,6 +11,7 @@ import config
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import time
 
 # physical_devices = tf.config.list_physical_devices('GPU') 
 # tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -44,9 +45,10 @@ class Model(nn.Module):
         return log_prob, value
 
     def predict(self, gamestate):
-        image_tensor = torch.Tensor(gamestate.to_image()).to(self.device)
-        log_probs, value = self.forward(image_tensor)
-        probs = torch.exp(log_probs)
+        with torch.no_grad():
+            image_tensor = torch.Tensor(gamestate.to_image()).to(self.device)
+            log_probs, value = self.forward(image_tensor)
+            probs = torch.exp(log_probs)
         return probs, value
 
     def train(self, data, epochs=100, verbose=False):
@@ -55,17 +57,25 @@ class Model(nn.Module):
         probs = torch.Tensor(probs).to(self.device)
         values = torch.Tensor(values).to(self.device)
         loss_history = []
+        # Create a DataLoader for batching and shuffling
+        dataset = torch.utils.data.TensorDataset(xs, probs, values)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.batch_size, shuffle=True)
+
         for epoch in range(epochs):
-            self.optimizer.zero_grad()
-            pred_log_probs, pred_values = self.forward(xs)
-            pred_values = pred_values.view((-1,))
-            loss1 = self.loss1(pred_log_probs, probs)
-            loss2 = self.loss2(pred_values, values)
-            loss = loss1 + loss2
-            print(f"(#{epoch})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
-            loss_history.append((loss.item(), loss1.item(), loss2.item()))
-            loss.backward()
-            self.optimizer.step()
+            start_time = time.time()
+            for i, (batch_xs, batch_probs, batch_values) in enumerate(dataloader):
+                # actual training steps
+                self.optimizer.zero_grad()
+                pred_log_probs, pred_values = self.forward(batch_xs)
+                pred_values = pred_values.view((-1,))
+                loss1 = self.loss1(pred_log_probs, batch_probs)
+                loss2 = self.loss2(pred_values, batch_values)
+                loss = loss1 + loss2
+                print(f"(#{epoch+1:3}|{i+1:3})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
+                with torch.no_grad():
+                    loss_history.append((loss.item(), loss1.item(), loss2.item()))
+                loss.backward()
+                self.optimizer.step()
         return loss_history
 
     def load(self, filename="latest_weights.pth"):

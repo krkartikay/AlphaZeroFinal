@@ -9,15 +9,15 @@ server_address = f"http://{server_host}:{server_port}"
 
 learning_rate = 3e-5
 decay = 1e-4
-train_epochs = 250
+train_epochs = 100
 batch_size = 5000
 
 num_actions = 64*64
-num_evaluate = 10
+num_evaluate = 100
 num_simulate = 21
 
-eval_verbose = True
-eval_player = 'mcts'
+eval_verbose = False
+eval_player = 'nnet'
 
 pb_c_init = 1.25
 pb_c_base = 20000

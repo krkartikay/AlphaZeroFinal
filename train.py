@@ -10,6 +10,7 @@ import model
 import numpy as np
 import torch
 import json
+import time
 
 def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,8 +23,12 @@ def train():
 
     print("loading training data")
 
-    with open("training_data.log", "r") as f:
-        lines = f.readlines()
+    try:
+        with open("training_data.log", "r") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        print("No training data")
+        return []
 
     lines = lines[-config.last_N_games:]
     data = [[json.loads(x) for x in line.strip().split('\t')]  for line in lines]
@@ -34,9 +39,9 @@ def train():
     values = [l[1] for l in data]
     probs = [l[2] for l in data]
 
-    xs = np.array(xs)
-    values = np.array(values)
-    probs = np.array(probs)
+    xs = torch.Tensor(xs)
+    values = torch.Tensor(values)
+    probs = torch.Tensor(probs)
 
     print(xs.shape)
     print(values.shape)
