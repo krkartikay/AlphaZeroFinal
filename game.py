@@ -56,6 +56,16 @@ class GameState:
 
         return moves
     
+    def get_move(self, action: int):
+        a = action // 64
+        b = action % 64
+
+        move = chess.Move(a,b)
+        if chess.square_rank(b) == (7 if self.player() == 1 else 0) and self.board.piece_type_at(a) == chess.PAWN:
+            move = chess.Move(a,b,chess.QUEEN)
+        
+        return move
+    
     def next_state(self, action: int):
         legal_actions = self.legal_actions()
         
@@ -64,13 +74,7 @@ class GameState:
 
         g = GameState(self)
         
-        a = action // 64
-        b = action % 64
-
-        move = chess.Move(a,b)
-        if chess.square_rank(b) == (7 if g.player() == 1 else 0) and g.board.piece_type_at(a) == chess.PAWN:
-            move = chess.Move(a,b,chess.QUEEN)
-        g.board.push(move)
+        g.board.push(self.get_move(action))
 
         return g     
 

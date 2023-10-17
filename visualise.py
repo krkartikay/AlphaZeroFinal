@@ -1,24 +1,28 @@
 # define visualisation of board
 
-def vis(x):
-    r = [('-1','O'),('1','X'),('0','.')]
+import game
+import chess
+import model
+import torch
 
-    for k, v in r:
-        x = x.replace(k, v)
-
-    i = 0
-    s = ""
-    for c in x:
-        if c in 'OX.':
-            i += 1
-            if i % 3 == 0:
-                s += c + "\n"
-            else:
-                s += c + " "
-    
-    return s
+def vis(fen):
+    g = game.GameState()
+    if fen != "":
+        g.board = chess.Board(fen)
+    print(g.board)
+    net = model.Model()
+    net.load()
+    probs, value = net.predict(g)
+    probs = probs[0]
+    value = value[0]
+    print(f"Value: {value.item():.2f}")
+    print(f"Top Probs:")
+    probs, indices = torch.topk(probs, 10)
+    for p, i in zip(probs, indices):
+        print(f"Move: {g.get_move(i)}\tProb: {p:.3f}")
+        g1 = g.next_state(i)
+        print(g1.board)
 
 if __name__ == '__main__':
-    while True:
-        x = input("Input: ")        
-        print(vis(x))
+    fen = input("FEN: ")
+    vis(fen)
