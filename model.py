@@ -20,9 +20,16 @@ class Model(nn.Module):
     def __init__(self, device='cpu'):
         super(Model, self).__init__()
         self.device = device #
-        self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(7*8*8, 64*64)
-        self.fc2 = nn.Linear(64*64, 64*64)
+        
+        # conv layers
+        self.conv1 = nn.Conv2d(7, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+
+        # Fully connected layers
+        self.fc1 = nn.Linear(128 * 8 * 8, 2048)
+        self.fc2 = nn.Linear(2048, 64*64)
+    
         self.prob_logits = nn.Linear(64*64, config.num_actions)
         torch.nn.init.uniform_(self.prob_logits.weight, -0.01, 0.01)
         torch.nn.init.uniform_(self.prob_logits.bias, -0.01, 0.01)
@@ -37,9 +44,16 @@ class Model(nn.Module):
         self.to(self.device)
 
     def forward(self, x):
-        x = self.flatten(x)
-        x = nn.functional.relu(self.fc1(x))
-        x = nn.functional.relu(self.fc2(x))
+        x = nn.ReLU()(self.conv1(x))
+        x = nn.ReLU()(self.conv2(x))
+        x = nn.ReLU()(self.conv3(x))
+
+        # Flatten the tensor
+        x = x.view(x.size(0), -1)
+
+        x = nn.ReLU()(self.fc1(x))
+        x = nn.ReLU()(self.fc2(x))
+
         log_prob = self.prob_head(self.prob_logits(x))
         value = self.value_activation(self.value_head(x))
         return log_prob, value

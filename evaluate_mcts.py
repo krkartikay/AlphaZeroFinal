@@ -71,7 +71,7 @@ while True:
     load_model_weights()
     d = {}
     eval_player = "mcts"
-    for i in range(10):
+    for i in range(1):
         results = evaluate_net(eval_player, exclude_illegal=False)
         num_moves, winner, time_taken = results
         d[winner] = d.get(winner, 0) + 1
