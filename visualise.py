@@ -21,8 +21,11 @@ def vis(fen, k):
     probs, indices = torch.topk(probs, k)
     for p, i in zip(probs, indices):
         print(f"Move: {g.get_move(i)}\tProb: {p:.3f}")
-        g1 = g.next_state(i)
-        print(g1.board)
+        try:
+            g1 = g.next_state(i)
+            print(g1.board)
+        except:
+            print("(illegal)")
 
 if __name__ == '__main__':
     # fen = input("FEN: ")
@@ -31,4 +34,4 @@ if __name__ == '__main__':
         fen = ' '.join(sys.argv[1:])
     else:
         fen = ''
-    vis(fen, 5)
+    vis(fen, 15)

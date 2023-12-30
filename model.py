@@ -85,7 +85,7 @@ class Model(nn.Module):
                 loss1 = self.loss1(pred_log_probs, batch_probs)
                 loss2 = self.loss2(pred_values, batch_values)
                 loss = loss1 + loss2
-                print(f"(#{epoch+1:3}|{i+1:3})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
+                print(f"(#{epoch+1:4}|{i+1:3})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
                 with torch.no_grad():
                     loss_history.append((loss.item(), loss1.item(), loss2.item()))
                 loss.backward()

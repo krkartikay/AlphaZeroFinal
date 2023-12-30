@@ -33,7 +33,7 @@ def upload_data(string):
     resp = requests.post(config.server_address + "/train", data=string.encode())
     assert(resp.content == b'"OK"\n')
 
-while True:
+for i in range(1):
     load_model_weights()
     for i in range(config.client_play_games_num):
         data = play_game()

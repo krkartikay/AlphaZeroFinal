@@ -69,7 +69,7 @@ def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
     else:
         return i, "draw", (t2-t1)/i
 
-while True:
+for i in range(1):
     load_model_weights()
     d = {}
     eval_player = config.eval_player
