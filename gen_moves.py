@@ -15,7 +15,7 @@ print("Generating training data.")
 all_inps = []
 all_outs = []
 
-for i in range(20):
+for i in range(200):
     g = game.GameState()
     while not g.terminated():
         inp = g.to_image()
@@ -67,15 +67,17 @@ net = PolicyNet()
 dataset = data.TensorDataset(all_inps, all_outs)
 dataloader = data.DataLoader(dataset, batch_size=batch_dim, shuffle=True)
 
-ce_loss = nn.BCEWithLogitsLoss()
+ce_loss = nn.KLDivLoss(reduction="batchmean")
 optimizer = optim.Adam(net.parameters(), lr=0.003)
 
 for i in range(50):
     for i, batch in enumerate(dataloader):
         optimizer.zero_grad()
         inps, outs = batch
+        norm_outs = outs / outs.sum(dim=1, keepdim=True)
         predict_outs = net(inps)
-        loss = ce_loss(predict_outs, outs)
+        log_probs = F.log_softmax(predict_outs, dim=1)
+        loss = ce_loss(log_probs, norm_outs)
         print(f"Batch {i}: ", loss)
         loss.backward()
         optimizer.step()
