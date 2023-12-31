@@ -13,7 +13,7 @@ train_epochs = 200
 batch_size = 5000
 
 num_actions = 64*64
-num_evaluate = 500
+num_evaluate = 100
 num_simulate = 21
 
 eval_verbose = False

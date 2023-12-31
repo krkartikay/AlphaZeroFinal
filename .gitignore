@@ -5,6 +5,7 @@
 *.pth
 *.tsv
 *.csv
+*.pkl
 *.pstats
 __pycache__/
 .vscode/

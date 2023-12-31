@@ -14,14 +14,6 @@ import random
 import requests
 import tempfile
 
-try:
-    log = open('evaluate.tsv', 'r')
-    log.close()
-except FileNotFoundError:
-    with open("evaluate.tsv", "w") as log:
-        log.write("win\tdraw\tloss\tillegal\tmoves\ttime_taken_ms\n")
-
-net = model.Model()
 
 def load_model_weights():
     data = requests.get(config.server_address + "/weights")
@@ -29,7 +21,7 @@ def load_model_weights():
     open(tname, "wb").write(data.content)
     net.load(tname)
 
-def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
+def evaluate_net(net: model.Model, eval_player = 'nnet', exclude_illegal=False):
     players = ["random", eval_player]
     random.shuffle(players)
     g = game.GameState()
@@ -69,21 +61,36 @@ def evaluate_net(eval_player = 'nnet', exclude_illegal=False):
     else:
         return i, "draw", (t2-t1)/i
 
-for i in range(1):
-    load_model_weights()
+def evaluate_model(model: model.Model, verbose=False):
     d = {}
     eval_player = config.eval_player
     for i in range(config.num_evaluate):
-        results = evaluate_net(eval_player, exclude_illegal=False)
+        results = evaluate_net(model, eval_player, exclude_illegal=False)
         num_moves, winner, time_taken = results
         d[winner] = d.get(winner, 0) + 1
         d['moves'] = d.get('moves', 0) + num_moves
-        print(results, d)
+        if verbose:
+            print(results, d)
     win     = d.get(eval_player, 0)
     draw    = d.get('draw', 0)
     loss    = d.get('random', 0)
     illegal = d.get('illegal', 0)
     moves = d.get('moves', 0) / config.num_evaluate
+    return (win, draw, loss, illegal, moves, time_taken)
+
+if __name__ == "__main__":
+    try:
+        log = open('evaluate.tsv', 'r')
+        log.close()
+    except FileNotFoundError:
+        with open("evaluate.tsv", "w") as log:
+            log.write("win\tdraw\tloss\tillegal\tmoves\ttime_taken_ms\n")
+
+    net = model.Model()
+    load_model_weights()
+
+    win, draw, loss, illegal, moves, time_taken = evaluate_model(net, verbose=True)
+
     with open("evaluate.tsv", "a") as log:
         log.write(f"{win}\t{draw}\t{loss}\t{illegal}\t{moves}\t{time_taken*1000:0.4f}\n")
     # print(f"Win: {win:3}\tDraw: {draw:3}\tLose: {loss:3}\tIllegal: {illegal:4}\t\t" +
