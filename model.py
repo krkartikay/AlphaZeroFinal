@@ -19,17 +19,11 @@ import time
 class Model(nn.Module):
     def __init__(self, device='cpu'):
         super(Model, self).__init__()
-        self.device = device #
-        
-        # conv layers
-        self.conv1 = nn.Conv2d(7, 32, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.device = device
 
-        # Fully connected layers
-        self.fc1 = nn.Linear(128 * 8 * 8, 2048)
+        self.fc1 = nn.Linear(7 * 8 * 8, 2048)
         self.fc2 = nn.Linear(2048, 64*64)
-    
+
         self.prob_logits = nn.Linear(64*64, config.num_actions)
         torch.nn.init.uniform_(self.prob_logits.weight, -0.01, 0.01)
         torch.nn.init.uniform_(self.prob_logits.bias, -0.01, 0.01)
@@ -44,10 +38,6 @@ class Model(nn.Module):
         self.to(self.device)
 
     def forward(self, x):
-        x = nn.ReLU()(self.conv1(x))
-        x = nn.ReLU()(self.conv2(x))
-        x = nn.ReLU()(self.conv3(x))
-
         # Flatten the tensor
         x = x.view(x.size(0), -1)
 

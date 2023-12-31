@@ -1,83 +1,47 @@
 import game
 import numpy
 import random
-import torch
-from torch import nn
-import torch.nn.functional as F
-import torch.utils.data as data
-from torch import optim
 
 random.seed(42)
-torch.random.manual_seed(42)
 
 print("Generating training data.")
 
 all_inps = []
 all_outs = []
+all_vals = []
 
-for i in range(200):
+for i in range(20):
     g = game.GameState()
     while not g.terminated():
         inp = g.to_image()
         legal_actions = [i for i, x in enumerate(g.legal_actions()) if x]
-        out = [int(x) for i, x in enumerate(g.legal_actions())]
+        out = [int(x) for x in g.legal_actions()]
+        num_legal_actions = sum(out)
+        norm_out = [x/num_legal_actions for x in out]
         action = random.choice(legal_actions)
         g = g.next_state(action)
         all_inps.append(inp[0])
-        all_outs.append(out)
-
-all_inps = torch.Tensor(all_inps)
-all_outs = torch.Tensor(all_outs)
+        all_outs.append(norm_out)
+        all_vals.append(0)
+    print(f"Game {i+1} done!")
 
 print("Training data ready. Shape:")
-print(all_inps.shape)
-print(all_outs.shape)
+print(len(all_inps), len(all_inps[0]))
+print(len(all_outs), len(all_outs[0]))
 
 #######################################################
 
 
 inp_dim = 7 * 8 * 8
-hidden_dim_1 = 5000
-hidden_dim_2 = 5000
-hidden_dim_3 = 5000
 out_dim = 64 * 64
 batch_dim = 100
 
-
-class PolicyNet(nn.Module):
-    def __init__(self):
-        super(PolicyNet, self).__init__()
-        self.hidden_layer_1 = nn.Linear(inp_dim, hidden_dim_1)
-        self.hidden_layer_2 = nn.Linear(hidden_dim_1, hidden_dim_2)
-        self.hidden_layer_3 = nn.Linear(hidden_dim_2, hidden_dim_3)
-        self.output_layer = nn.Linear(hidden_dim_3, out_dim)
-
-    def forward(self, x):
-        batch_size = x.size(0)
-        x = x.reshape((batch_size, -1))
-        x = F.relu(self.hidden_layer_1(x))
-        x = x + F.relu(self.hidden_layer_2(x))
-        x = x + F.relu(self.hidden_layer_3(x))
-        x = self.output_layer(x)
-        return x
-
+import model
 
 print("Running neural net training!")
-net = PolicyNet()
-dataset = data.TensorDataset(all_inps, all_outs)
-dataloader = data.DataLoader(dataset, batch_size=batch_dim, shuffle=True)
+net = model.Model('cuda')
+net.load()
 
-ce_loss = nn.KLDivLoss(reduction="batchmean")
-optimizer = optim.Adam(net.parameters(), lr=0.003)
+net.train([all_inps, all_outs, all_vals])
 
-for i in range(50):
-    for i, batch in enumerate(dataloader):
-        optimizer.zero_grad()
-        inps, outs = batch
-        norm_outs = outs / outs.sum(dim=1, keepdim=True)
-        predict_outs = net(inps)
-        log_probs = F.log_softmax(predict_outs, dim=1)
-        loss = ce_loss(log_probs, norm_outs)
-        print(f"Batch {i}: ", loss)
-        loss.backward()
-        optimizer.step()
+net.store()
