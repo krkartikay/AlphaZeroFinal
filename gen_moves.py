@@ -1,8 +1,10 @@
 import game
 import numpy
 import random
+import torch
 
 random.seed(42)
+torch.random.manual_seed(42)
 
 print("Generating training data.")
 
@@ -10,7 +12,7 @@ all_inps = []
 all_outs = []
 all_vals = []
 
-for i in range(20):
+for i in range(500):
     g = game.GameState()
     while not g.terminated():
         inp = g.to_image()
@@ -31,17 +33,15 @@ print(len(all_outs), len(all_outs[0]))
 
 #######################################################
 
-
-inp_dim = 7 * 8 * 8
-out_dim = 64 * 64
-batch_dim = 100
-
 import model
 
 print("Running neural net training!")
 net = model.Model('cuda')
-net.load()
 
-net.train([all_inps, all_outs, all_vals])
+print(net)
 
-net.store()
+# net.load()
+
+for i in range(30):
+    net.train([all_inps, all_outs, all_vals], epochs=10)
+    net.store()
