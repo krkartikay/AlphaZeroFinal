@@ -18,7 +18,7 @@ class GameState:
     '''
     def __init__(self, other=None):
         if other is None:
-            self.board = chess.Board("2k5/5q2/8/8/8/8/3Q4/1K6 w - - 0 1")
+            self.board = chess.Board()
         else:
             self.board = chess.Board(other.board.fen())
             
