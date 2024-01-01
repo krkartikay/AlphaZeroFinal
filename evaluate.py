@@ -64,19 +64,21 @@ def evaluate_net(net: model.Model, eval_player = 'nnet', exclude_illegal=False):
 def evaluate_model(model: model.Model, verbose=False):
     d = {}
     eval_player = config.eval_player
+    all_moves = []
     for i in range(config.num_evaluate):
         results = evaluate_net(model, eval_player, exclude_illegal=False)
         num_moves, winner, time_taken = results
+        all_moves.append(num_moves)
         d[winner] = d.get(winner, 0) + 1
         d['moves'] = d.get('moves', 0) + num_moves
         if verbose:
-            print(results, d)
+            print(f"{results} \t {win}\t{draw}\t{loss}\t{illegal}\t{moves}\t{time_taken*1000:0.4f}\n")
     win     = d.get(eval_player, 0)
     draw    = d.get('draw', 0)
     loss    = d.get('random', 0)
     illegal = d.get('illegal', 0)
     moves = d.get('moves', 0) / config.num_evaluate
-    return (win, draw, loss, illegal, moves, time_taken)
+    return (win, draw, loss, illegal, moves, time_taken, all_moves)
 
 if __name__ == "__main__":
     try:
@@ -89,7 +91,7 @@ if __name__ == "__main__":
     net = model.Model()
     load_model_weights()
 
-    win, draw, loss, illegal, moves, time_taken = evaluate_model(net, verbose=True)
+    win, draw, loss, illegal, moves, time_taken, all_moves = evaluate_model(net, verbose=True)
 
     with open("evaluate.tsv", "a") as log:
         log.write(f"{win}\t{draw}\t{loss}\t{illegal}\t{moves}\t{time_taken*1000:0.4f}\n")

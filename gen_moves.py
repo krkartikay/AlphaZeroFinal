@@ -4,8 +4,8 @@ import random
 import torch
 import pickle
 
-random.seed(42)
-torch.random.manual_seed(42)
+# random.seed(42)
+# torch.random.manual_seed(42)
 
 NUM_GAMES = 1000
 
@@ -31,14 +31,31 @@ for i in range(NUM_GAMES):
         all_vals.append(0)
     print(f"Game {i+1} done!")
 
-print("Training data ready. Shape:")
 all_inps = torch.Tensor(numpy.array(all_inps))
 all_outs = torch.Tensor(numpy.array(all_outs))
+all_vals = torch.Tensor(numpy.array(all_vals))
+
 # print(len(all_inps), len(all_inps[0]))
 # print(len(all_outs), len(all_outs[0]))
-print(all_inps.shape)
-print(all_outs.shape)
+
+try:
+    print("Appending to existing data...")
+    with open('gen_data.pkl', 'rb') as file:
+        all_inps_old, all_outs_old, all_vals_old = pickle.load(file)
+
+    all_inps_new = torch.concat((all_inps, all_inps_old))
+    all_outs_new = torch.concat((all_outs, all_outs_old))
+    all_vals_new = torch.concat((all_vals, all_vals_old))
+except FileNotFoundError:
+    all_inps_new = all_inps
+    all_outs_new = all_outs
+    all_vals_new = all_vals
+
+print("Training data ready. Shape:")
+print(all_inps_new.shape)
+print(all_outs_new.shape)
+print(all_vals_new.shape)
 
 with open('gen_data.pkl', 'wb') as file:
-    pickle.dump((all_inps, all_outs, all_vals), file)
+    pickle.dump((all_inps_new, all_outs_new, all_vals_new), file)
 

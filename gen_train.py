@@ -24,5 +24,5 @@ for i in range(30):
     print(f"{i+1}:")
     net.train([all_inps, all_outs, all_vals], epochs=10)
     net.store()
-    win, draw, loss, illegal, moves, _ = evaluate.evaluate_model(net)
-    print(f"\n\t\tAvg moves: {moves}, Completed games: {win+draw+loss}\n")
+    win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net)
+    print(f"\n\t\tAvg moves: {moves}, Completed games: {win+draw+loss}, All games: {all_moves}\n")

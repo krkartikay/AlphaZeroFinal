@@ -21,11 +21,11 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device
 
-        self.conv1 = nn.Conv2d(7, 32, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        # self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(7, 32, kernel_size=9, padding=4)
+        self.conv2 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
 
-        self.fc1 = nn.Linear(64 * 8 * 8, 64*64)
+        self.fc1 = nn.Linear(32 * 8 * 8, 64*64)
         # self.fc2 = nn.Linear(64*64, 64*64)
 
         self.prob_logits = nn.Linear(64*64, config.num_actions)
@@ -42,14 +42,14 @@ class Model(nn.Module):
         self.to(self.device)
 
     def forward(self, x):
-        x = nn.ReLU()(self.conv1(x))
-        x = nn.ReLU()(self.conv2(x))
-        # x = nn.ReLU()(self.conv3(x))
+        x = nn.LeakyReLU()(self.conv1(x))
+        x = nn.LeakyReLU()(self.conv2(x))
+        x = nn.LeakyReLU()(self.conv3(x))
 
         # Flatten the tensor
         x = x.view(x.size(0), -1)
 
-        x = nn.ReLU()(self.fc1(x))
+        x = nn.LeakyReLU()(self.fc1(x))
         # x = nn.ReLU()(self.fc2(x))
 
         log_prob = self.prob_head(self.prob_logits(x))
