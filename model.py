@@ -65,17 +65,20 @@ class Model(nn.Module):
 
     def train(self, data, epochs=100, verbose=False):
         xs, probs, values = data
-        xs = torch.Tensor(xs).to(self.device)
-        probs = torch.Tensor(probs).to(self.device)
-        values = torch.Tensor(values).to(self.device)
+        # xs = torch.Tensor(xs).to(self.device)
+        # probs = torch.Tensor(probs).to(self.device)
+        # values = torch.Tensor(values).to(self.device)
         loss_history = []
         # Create a DataLoader for batching and shuffling
         dataset = torch.utils.data.TensorDataset(xs, probs, values)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.batch_size, shuffle=True)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.batch_size, shuffle=True, num_workers=8, pin_memory=True)
 
         for epoch in range(epochs):
             start_time = time.time()
             for i, (batch_xs, batch_probs, batch_values) in enumerate(dataloader):
+                batch_xs = batch_xs.to(self.device)
+                batch_probs = batch_probs.to(self.device)
+                batch_values = batch_values.to(self.device)
                 # actual training steps
                 self.optimizer.zero_grad()
                 pred_log_probs, pred_values = self.forward(batch_xs)
