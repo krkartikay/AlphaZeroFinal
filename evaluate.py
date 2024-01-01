@@ -72,7 +72,7 @@ def evaluate_model(model: model.Model, verbose=False):
         d[winner] = d.get(winner, 0) + 1
         d['moves'] = d.get('moves', 0) + num_moves
         if verbose:
-            print(f"{results} \t {win}\t{draw}\t{loss}\t{illegal}\t{moves}\t{time_taken*1000:0.4f}\n")
+            print(f"{results}\t{d}")
     win     = d.get(eval_player, 0)
     draw    = d.get('draw', 0)
     loss    = d.get('random', 0)
