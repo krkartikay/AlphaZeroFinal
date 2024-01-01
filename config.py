@@ -7,7 +7,7 @@ server_port = 5000
 
 server_address = f"http://{server_host}:{server_port}"
 
-learning_rate = 3e-3
+learning_rate = 3e-4
 decay = 1e-4
 train_epochs = 200
 batch_size = 5000

@@ -21,11 +21,11 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device
 
-        self.conv1 = nn.Conv2d(7, 32, kernel_size=9, padding=4)
-        self.conv2 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(7, 64, kernel_size=9, padding=4)
+        self.conv2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
 
-        self.fc1 = nn.Linear(32 * 8 * 8, 64*64)
+        self.fc1 = nn.Linear(64 * 8 * 8, 64*64)
         # self.fc2 = nn.Linear(64*64, 64*64)
 
         self.prob_logits = nn.Linear(64*64, config.num_actions)

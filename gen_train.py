@@ -21,17 +21,23 @@ with open('gen_data.pkl', 'rb') as file:
 
 net.load()
 
-with open("all_moves.csv","a") as results_file:
-    results_writer = csv.writer(results_file)
-    win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
-    results_writer.writerow(all_moves)
-    results_file.flush()
+results_file = open("all_moves.csv","a")
+results_writer = csv.writer(results_file)
+summary_file = open("summary.csv","a")
+summary_writer = csv.writer(summary_file)
+win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
+summary_writer.writerow([win,draw,loss,illegal,0])
+results_writer.writerow(all_moves)
+results_file.flush()
+summary_file.flush()
 
-    for i in range(100):
-        print(f"{i+1}:")
-        net.train([all_inps, all_outs, all_vals], epochs=10)
-        net.store()
-        win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
-        results_writer.writerow(all_moves)    
-        print(f"\n\t\tAvg moves: {moves}, Completed games: {win+draw+loss}, All games: {all_moves}\n")
-        results_file.flush()
+for i in range(100):
+    print(f"{i+1}:")
+    losses = net.train([all_inps, all_outs, all_vals], epochs=100)
+    net.store()
+    win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
+    summary_writer.writerow([win,draw,loss,illegal,losses[-1][0]])
+    results_writer.writerow(all_moves)
+    print(f"\n\t\tAvg moves: {moves}, Completed games: {win+draw+loss}, All games: {all_moves}\n")
+    results_file.flush()
+    summary_file.flush()
