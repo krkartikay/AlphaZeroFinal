@@ -31,9 +31,9 @@ results_writer.writerow(all_moves)
 results_file.flush()
 summary_file.flush()
 
-for i in range(100):
+for i in range(10):
     print(f"{i+1}:")
-    losses = net.train([all_inps, all_outs, all_vals], epochs=100)
+    losses = net.train([all_inps, all_outs, all_vals], epochs=10)
     net.store()
     win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
     summary_writer.writerow([win,draw,loss,illegal,losses[-1][0]])

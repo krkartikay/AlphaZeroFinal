@@ -21,21 +21,19 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device
 
-        self.conv1 = nn.Conv2d(7, 64, kernel_size=9, padding=4)
-        self.conv2 = nn.Conv2d(64, 64, kernel_size=9, padding=4)
-        self.conv3 = nn.Conv2d(64, 64, kernel_size=9, padding=4)
+        self.conv1 = nn.Conv2d(7, 64, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
 
         self.fc1 = nn.Linear(64 * 8 * 8, 64*64)
         # self.fc2 = nn.Linear(64*64, 64*64)
 
         self.prob_logits = nn.Linear(64*64, config.num_actions)
-        torch.nn.init.uniform_(self.prob_logits.weight, -0.01, 0.01)
-        torch.nn.init.uniform_(self.prob_logits.bias, -0.01, 0.01)
         self.prob_head = nn.LogSoftmax(dim=1)
+
         self.value_head = nn.Linear(64*64, 1)
-        torch.nn.init.uniform_(self.value_head.weight, -0.01, 0.01)
-        torch.nn.init.uniform_(self.value_head.bias, -0.01, 0.01)
         self.value_activation = nn.Tanh()
+
         self.optimizer = optim.Adam(self.parameters(), lr=config.learning_rate)
         self.loss1 = nn.KLDivLoss(reduction='batchmean')
         self.loss2 = nn.MSELoss()
@@ -71,10 +69,10 @@ class Model(nn.Module):
         loss_history = []
         # Create a DataLoader for batching and shuffling
         dataset = torch.utils.data.TensorDataset(xs, probs, values)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.batch_size, shuffle=True, num_workers=8, pin_memory=True)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.batch_size, pin_memory=True)
 
         for epoch in range(epochs):
-            start_time = time.time()
+            epoch_start_time = time.time()
             for i, (batch_xs, batch_probs, batch_values) in enumerate(dataloader):
                 batch_xs = batch_xs.to(self.device)
                 batch_probs = batch_probs.to(self.device)
@@ -86,15 +84,28 @@ class Model(nn.Module):
                 loss1 = self.loss1(pred_log_probs, batch_probs)
                 loss2 = self.loss2(pred_values, batch_values)
                 loss = loss1 + loss2
-                print(f"(#{epoch+1:4}|{i+1:3})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
-                with torch.no_grad():
-                    loss_history.append((loss.item(), loss1.item(), loss2.item()))
                 loss.backward()
                 self.optimizer.step()
+                # print(f"(#{epoch+1:4}|{i+1:3})")
+                if i % 10 == 0:
+                    with torch.no_grad():
+                        l = (loss.item(), loss1.item(), loss2.item())
+                        print(f"(#{epoch+1:4}|{i:4})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
+                        loss_history.append(l)
+            total_epoch_time = time.time() - epoch_start_time
+            with torch.no_grad():
+                l = (loss.item(), loss1.item(), loss2.item())
+                print(f"(#{epoch+1:4})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}, time = {total_epoch_time} s")
+                loss_history.append(l)
+            # note the last loss after an epoch, it causes sync issues during a batch
+            # todo: we can calculate avg or total loss here somehow
         return loss_history
 
     def load(self, filename="latest_weights.pth"):
-        self.load_state_dict(torch.load(filename))
+        try:
+            self.load_state_dict(torch.load(filename))
+        except FileNotFoundError:
+            print("No existing model!")
         self.to(self.device)
 
     def store(self, filename="latest_weights.pth"):
