@@ -21,12 +21,19 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device
 
-        self.conv1 = nn.Conv2d(7, 64, kernel_size=3, padding=1)
+        self.conv0 = nn.Conv2d(7, 64, kernel_size=3, padding=1)
+
+        self.conv1 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.conv5 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.conv6 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.conv7 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.conv8 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
 
         self.fc1 = nn.Linear(64 * 8 * 8, 64*64)
-        # self.fc2 = nn.Linear(64*64, 64*64)
+        self.fc2 = nn.Linear(64 * 64, 64*64)
 
         self.prob_logits = nn.Linear(64*64, config.num_actions)
         self.prob_head = nn.LogSoftmax(dim=1)
@@ -40,15 +47,23 @@ class Model(nn.Module):
         self.to(self.device)
 
     def forward(self, x):
-        x = nn.LeakyReLU()(self.conv1(x))
-        x = nn.LeakyReLU()(self.conv2(x))
-        x = nn.LeakyReLU()(self.conv3(x))
+        x = nn.functional.leaky_relu(self.conv0(x))
+
+        # block 1
+        x = x + nn.functional.leaky_relu(self.conv1(x))
+        x = x + nn.functional.leaky_relu(self.conv2(x))
+        x = x + nn.functional.leaky_relu(self.conv3(x))
+        x = x + nn.functional.leaky_relu(self.conv4(x))
+        x = x + nn.functional.leaky_relu(self.conv5(x))
+        x = x + nn.functional.leaky_relu(self.conv6(x))
+        x = x + nn.functional.leaky_relu(self.conv7(x))
+        x = x + nn.functional.leaky_relu(self.conv8(x))
 
         # Flatten the tensor
         x = x.view(x.size(0), -1)
 
-        x = nn.LeakyReLU()(self.fc1(x))
-        # x = nn.ReLU()(self.fc2(x))
+        x = nn.functional.leaky_relu(self.fc1(x))
+        x = nn.functional.leaky_relu(self.fc2(x))
 
         log_prob = self.prob_head(self.prob_logits(x))
         value = self.value_activation(self.value_head(x))
@@ -74,6 +89,7 @@ class Model(nn.Module):
         for epoch in range(epochs):
             epoch_start_time = time.time()
             for i, (batch_xs, batch_probs, batch_values) in enumerate(dataloader):
+                batch_start_time = time.time()
                 batch_xs = batch_xs.to(self.device)
                 batch_probs = batch_probs.to(self.device)
                 batch_values = batch_values.to(self.device)
@@ -86,19 +102,17 @@ class Model(nn.Module):
                 loss = loss1 + loss2
                 loss.backward()
                 self.optimizer.step()
-                # print(f"(#{epoch+1:4}|{i+1:3})")
+                total_batch_time = time.time() - batch_start_time
+                batch_time_ms = total_batch_time * 1000
                 if i % 10 == 0:
                     with torch.no_grad():
                         l = (loss.item(), loss1.item(), loss2.item())
-                        print(f"(#{epoch+1:4}|{i:4})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}")
+                        print(f"(#{epoch+1:4}|{i+1:4})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}, time/batch: {batch_time_ms:2.1f}ms")
                         loss_history.append(l)
-            total_epoch_time = time.time() - epoch_start_time
-            with torch.no_grad():
-                l = (loss.item(), loss1.item(), loss2.item())
-                print(f"(#{epoch+1:4})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}, time = {total_epoch_time} s")
-                loss_history.append(l)
             # note the last loss after an epoch, it causes sync issues during a batch
             # todo: we can calculate avg or total loss here somehow
+            total_epoch_time = time.time() - epoch_start_time
+            print(f"{total_epoch_time=}")
         return loss_history
 
     def load(self, filename="latest_weights.pth"):
