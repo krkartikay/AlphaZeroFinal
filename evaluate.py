@@ -22,6 +22,7 @@ def load_model_weights():
     net.load(tname)
 
 def evaluate_net(net: model.Model, eval_player = 'nnet', exclude_illegal=False):
+    net.eval()
     players = ["random", eval_player]
     random.shuffle(players)
     g = game.GameState()

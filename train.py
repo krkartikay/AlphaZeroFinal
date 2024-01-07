@@ -47,7 +47,7 @@ def train():
     print(values.shape)
     print(probs.shape)
 
-    hist = net.train([xs, probs, values], config.train_epochs)
+    hist = net.train_model([xs, probs, values], config.train_epochs)
     net.store()
 
     return hist

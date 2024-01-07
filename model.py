@@ -23,12 +23,16 @@ class Model(nn.Module):
 
         self.conv0 = nn.Conv2d(7, 64, kernel_size=3, padding=1)
 
+        self.dropout0 = nn.Dropout(0.1)
         self.conv1 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.dropout1 = nn.Dropout(0.1)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv4 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.dropout2 = nn.Dropout(0.1)
         self.conv5 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv6 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.dropout3 = nn.Dropout(0.1)
         self.conv7 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv8 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
 
@@ -48,14 +52,18 @@ class Model(nn.Module):
 
     def forward(self, x):
         x = nn.functional.leaky_relu(self.conv0(x))
+        x = self.dropout0(x)
 
         # block 1
         x = x + nn.functional.leaky_relu(self.conv1(x))
         x = x + nn.functional.leaky_relu(self.conv2(x))
+        x = self.dropout1(x)
         x = x + nn.functional.leaky_relu(self.conv3(x))
         x = x + nn.functional.leaky_relu(self.conv4(x))
+        x = self.dropout2(x)
         x = x + nn.functional.leaky_relu(self.conv5(x))
         x = x + nn.functional.leaky_relu(self.conv6(x))
+        x = self.dropout3(x)
         x = x + nn.functional.leaky_relu(self.conv7(x))
         x = x + nn.functional.leaky_relu(self.conv8(x))
 
@@ -76,7 +84,7 @@ class Model(nn.Module):
             probs = torch.exp(log_probs)
         return probs, value
 
-    def train(self, data, epochs=100, verbose=False):
+    def train_model(self, data, epochs=100, verbose=False):
         xs, probs, values = data
         # xs = torch.Tensor(xs).to(self.device)
         # probs = torch.Tensor(probs).to(self.device)
@@ -86,6 +94,7 @@ class Model(nn.Module):
         dataset = torch.utils.data.TensorDataset(xs, probs, values)
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.batch_size, pin_memory=True)
 
+        self.train()
         for epoch in range(epochs):
             epoch_start_time = time.time()
             for i, (batch_xs, batch_probs, batch_values) in enumerate(dataloader):
