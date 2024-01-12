@@ -23,58 +23,50 @@ class Model(nn.Module):
 
         self.conv0 = nn.Conv2d(7, 64, kernel_size=3, padding=1)
 
-        self.dropout0 = nn.Dropout(0.1)
+        self.batchnorm0 = nn.BatchNorm2d(64)
+        self.dropout0 = nn.Dropout(0.5)
         self.conv1 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-        self.dropout1 = nn.Dropout(0.1)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv4 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-        self.dropout2 = nn.Dropout(0.1)
-        self.conv5 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-        self.conv6 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-        self.dropout3 = nn.Dropout(0.1)
-        self.conv7 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-        self.conv8 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
 
+        self.batchnorm1 = nn.BatchNorm1d(64*8*8)
         self.fc1 = nn.Linear(64 * 8 * 8, 64*64)
+        self.batchnorm2 = nn.BatchNorm1d(64*64)
         self.fc2 = nn.Linear(64 * 64, 64*64)
 
         self.prob_logits = nn.Linear(64*64, config.num_actions)
         self.prob_head = nn.LogSoftmax(dim=1)
 
-        self.value_head = nn.Linear(64*64, 1)
-        self.value_activation = nn.Tanh()
+        # self.value_head = nn.Linear(64*64, 1)
+        # self.value_activation = nn.Tanh()
 
-        self.optimizer = optim.Adam(self.parameters(), lr=config.learning_rate)
+        self.optimizer = optim.Adam(self.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay)
         self.loss1 = nn.KLDivLoss(reduction='batchmean')
         self.loss2 = nn.MSELoss()
         self.to(self.device)
 
     def forward(self, x):
         x = nn.functional.leaky_relu(self.conv0(x))
-        x = self.dropout0(x)
+        x = self.dropout0(self.batchnorm0(x))
 
         # block 1
         x = x + nn.functional.leaky_relu(self.conv1(x))
         x = x + nn.functional.leaky_relu(self.conv2(x))
-        x = self.dropout1(x)
         x = x + nn.functional.leaky_relu(self.conv3(x))
         x = x + nn.functional.leaky_relu(self.conv4(x))
-        x = self.dropout2(x)
-        x = x + nn.functional.leaky_relu(self.conv5(x))
-        x = x + nn.functional.leaky_relu(self.conv6(x))
-        x = self.dropout3(x)
-        x = x + nn.functional.leaky_relu(self.conv7(x))
-        x = x + nn.functional.leaky_relu(self.conv8(x))
 
         # Flatten the tensor
         x = x.view(x.size(0), -1)
 
+        x = self.batchnorm1(x)
         x = nn.functional.leaky_relu(self.fc1(x))
+        x = self.batchnorm2(x)
         x = nn.functional.leaky_relu(self.fc2(x))
 
         log_prob = self.prob_head(self.prob_logits(x))
-        value = self.value_activation(self.value_head(x))
+        # value = self.value_activation(self.value_head(x))
+        value = torch.zeros(x.shape[0]).to(self.device)
         return log_prob, value
 
     def predict(self, gamestate):
