@@ -76,14 +76,14 @@ class Model(nn.Module):
             probs = torch.exp(log_probs)
         return probs, value
 
-    def train_model(self, data, epochs=100, verbose=False):
-        xs, probs, values = data
+    def train_model(self, dataset, epochs=100, verbose=False):
+        # xs, probs, values = data
         # xs = torch.Tensor(xs).to(self.device)
         # probs = torch.Tensor(probs).to(self.device)
         # values = torch.Tensor(values).to(self.device)
         loss_history = []
         # Create a DataLoader for batching and shuffling
-        dataset = torch.utils.data.TensorDataset(xs, probs, values)
+        # dataset = torch.utils.data.TensorDataset(xs, probs, values)
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.batch_size, pin_memory=True)
 
         self.train()
