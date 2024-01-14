@@ -11,7 +11,7 @@ learning_rate = 3e-3
 decay = 1e-4
 train_epochs = 200
 batch_size = 5000
-weight_decay = 0.01
+weight_decay = 0.001
 
 num_actions = 64*64
 num_evaluate = 100

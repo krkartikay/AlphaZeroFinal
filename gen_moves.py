@@ -1,3 +1,4 @@
+import os
 import game
 import numpy
 import random
@@ -35,27 +36,34 @@ all_inps = torch.Tensor(numpy.array(all_inps))
 all_outs = torch.Tensor(numpy.array(all_outs))
 all_vals = torch.Tensor(numpy.array(all_vals))
 
-# print(len(all_inps), len(all_inps[0]))
-# print(len(all_outs), len(all_outs[0]))
-
-try:
-    print("Appending to existing data...")
-    with open('gen_data.pkl', 'rb') as file:
-        all_inps_old, all_outs_old, all_vals_old = pickle.load(file)
-
-    all_inps_new = torch.concat((all_inps, all_inps_old))
-    all_outs_new = torch.concat((all_outs, all_outs_old))
-    all_vals_new = torch.concat((all_vals, all_vals_old))
-except FileNotFoundError:
-    all_inps_new = all_inps
-    all_outs_new = all_outs
-    all_vals_new = all_vals
-
 print("Training data ready. Shape:")
-print(all_inps_new.shape)
-print(all_outs_new.shape)
-print(all_vals_new.shape)
+print(all_inps.shape)
+print(all_outs.shape)
+print(all_vals.shape)
 
-with open('gen_data.pkl', 'wb') as file:
-    pickle.dump((all_inps_new, all_outs_new, all_vals_new), file)
+# Training data stats file
+data_stats_file = 'training_data/data_stats.pkl'
 
+# Check if the file exists and load the dictionary, otherwise initialize a new one
+if os.path.exists(data_stats_file):
+    with open(data_stats_file, 'rb') as file:
+        data_stats = pickle.load(file)
+else:
+    data_stats = { 'next_file_num': 1, 'file_lengths': []}
+
+next_file_num = data_stats['next_file_num']
+
+data_stats['file_lengths'].append(len(all_inps))
+data_stats['next_file_num'] = next_file_num + 1
+
+# Store the updated dictionary
+with open(data_stats_file, 'wb') as file:
+    pickle.dump(data_stats, file)
+
+# Update the dictionary and saved it first to minimise race conditions
+# Writing the file will take time so we do it later
+data = {'all_inps': all_inps, 'all_outs': all_outs, 'all_vals': all_vals}
+with open(f'training_data/data_{next_file_num}.pt', 'wb') as data_file:
+    torch.save(data, data_file)
+
+print(data_stats)

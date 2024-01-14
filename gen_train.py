@@ -31,9 +31,9 @@ summary_writer = csv.writer(summary_file)
 # results_file.flush()
 # summary_file.flush()
 
-for i in range(100):
+for i in range(500):
     print(f"{i+1}:")
-    losses = net.train_model([all_inps, all_outs, all_vals], epochs=5)
+    losses = net.train_model([all_inps, all_outs, all_vals], epochs=10)
     net.store()
     win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
     summary_writer.writerow([win,draw,loss,illegal,sum(all_moves)/len(all_moves),losses[-1][0]])
