@@ -2,6 +2,9 @@ import os
 import csv
 import pickle
 
+import torch
+
+import config
 import evaluate
 import model
 
@@ -21,11 +24,11 @@ results_file = open("all_moves.csv","a")
 results_writer = csv.writer(results_file)
 summary_file = open("summary.csv","a")
 summary_writer = csv.writer(summary_file)
-# win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
-# summary_writer.writerow([win,draw,loss,illegal,0])
-# results_writer.writerow(all_moves)
-# results_file.flush()
-# summary_file.flush()
+win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
+summary_writer.writerow([win,draw,loss,illegal,0])
+results_writer.writerow(all_moves)
+results_file.flush()
+summary_file.flush()
 
 data_stats_file = 'training_data/data_stats.pkl'
 
@@ -41,7 +44,7 @@ chess_dataset = ChessDataset(num_files=data_stats['next_file_num'] - 1,
 
 for i in range(500):
     print(f"{i+1}:")
-    losses = net.train_model(dataset=chess_dataset, epochs=10)
+    losses = net.train_model(dataset=chess_dataset, epochs=5)
     net.store()
     win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
     summary_writer.writerow([win,draw,loss,illegal,sum(all_moves)/len(all_moves),losses[-1]])

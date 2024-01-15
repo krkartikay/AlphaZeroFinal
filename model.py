@@ -21,53 +21,21 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device
 
-        # self.conv0 = nn.Conv2d(7, 7, kernel_size=3,
-        #                        padding='same')
+        self.conv0 = nn.Conv2d( 7, 128, kernel_size=7, padding='same')
 
-        # self.batchnorm0 = nn.BatchNorm2d(7)
-        # self.dropout0 = nn.Dropout(0.5)
-        self.conv1 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
-        # self.conv3 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
-        # self.conv4 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
-
-        # self.batchnorm1 = nn.BatchNorm1d(7*8*8)
-        # self.fc1 = nn.Linear(7 * 8 * 8, 64*64)
-        # self.batchnorm2 = nn.BatchNorm1d(64*64)
-        # self.fc2 = nn.Linear(64 * 64, 64*64)
-
-        self.prob_logits = nn.Linear(7*8*8, config.num_actions)
+        self.prob_logits = nn.Linear(128*64, config.num_actions)
         self.prob_head = nn.Sigmoid()
-
-        # self.value_head = nn.Linear(64*64, 1)
-        # self.value_activation = nn.Tanh()
 
         self.optimizer = optim.Adam(self.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay)
         self.loss1 = nn.BCELoss()
-        # self.loss2 = nn.MSELoss()
         self.to(self.device)
 
     def forward(self, x):
-        # x = nn.functional.leaky_relu(self.conv0(x))
-        # x = self.dropout0(x)
-
-        # block 1
-        x = x + nn.functional.leaky_relu(self.conv1(x))
-        x = x + nn.functional.leaky_relu(self.conv2(x))
-        # x = x + nn.functional.leaky_relu(self.conv3(x))
-        # x = x + nn.functional.leaky_relu(self.conv4(x))
+        x = nn.functional.leaky_relu(self.conv0(x))
 
         # Flatten the tensor
         x = x.view(x.size(0), -1)
-
-        # x = self.batchnorm1(x)
-        # x = nn.functional.leaky_relu(self.fc1(x))
-        # x = self.batchnorm2(x)
-        # x = nn.functional.leaky_relu(self.fc2(x))
-
         log_prob = self.prob_head(self.prob_logits(x))
-        # value = self.value_activation(self.value_head(x))
-        # value = torch.zeros(x.shape[0]).to(self.device)
         return log_prob
 
     def predict(self, gamestate):
@@ -78,10 +46,6 @@ class Model(nn.Module):
         return probs
 
     def train_model(self, dataset, epochs=100, verbose=False):
-        # xs, probs, values = data
-        # xs = torch.Tensor(xs).to(self.device)
-        # probs = torch.Tensor(probs).to(self.device)
-        # values = torch.Tensor(values).to(self.device)
         loss_history = []
         # Create a DataLoader for batching and shuffling
         # dataset = torch.utils.data.TensorDataset(xs, probs, values)
@@ -104,18 +68,18 @@ class Model(nn.Module):
                 # loss = loss1 + loss2
                 loss.backward()
                 self.optimizer.step()
+                l = loss.item()
                 total_batch_time = time.time() - batch_start_time
                 batch_time_ms = total_batch_time * 1000
-                # if i % 10 == 0:
-                with torch.no_grad():
-                    l = loss.item()
-                    print(f"(#{epoch+1:4}|{i+1:4})\ttotal loss: {loss.item():.4f}, time/batch: {batch_time_ms:2.1f}ms")
-                    loss_history.append(l)
+                if i % 10 == 0:
+                    with torch.no_grad():
+                        print(f"(#{epoch+1:4}|{i+1:4})\ttotal loss: {loss.item():.4f}, time/batch: {batch_time_ms:2.1f}ms")
+                        # loss_history.append(l)
             # note the last loss after an epoch, it causes sync issues during a batch
             # todo: we can calculate avg or total loss here somehow
             total_epoch_time = time.time() - epoch_start_time
             print(f"{total_epoch_time=}")
-        return loss_history
+        return [0]
 
     def load(self, filename="latest_weights.pth"):
         try:
