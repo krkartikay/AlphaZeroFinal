@@ -14,6 +14,8 @@ data_hist = numpy.array([[sum(i*BIN_SIZE <= x < (i+1)*BIN_SIZE for x in row)
 
 data_hist = data_hist.T
 
+data_hist = data_hist / data_hist.sum(0)
+
 ax = plt.axes()
 
 print(data_hist)

@@ -21,14 +21,15 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device
 
-        self.conv0 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
+        self.conv0 = nn.Conv2d(7, 7, kernel_size=3,
+                               padding='same')
 
         # self.batchnorm0 = nn.BatchNorm2d(7)
         # self.dropout0 = nn.Dropout(0.5)
         self.conv1 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
+        # self.conv3 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
+        # self.conv4 = nn.Conv2d(7, 7, kernel_size=3, padding=1)
 
         # self.batchnorm1 = nn.BatchNorm1d(7*8*8)
         # self.fc1 = nn.Linear(7 * 8 * 8, 64*64)
@@ -47,14 +48,14 @@ class Model(nn.Module):
         self.to(self.device)
 
     def forward(self, x):
-        x = nn.functional.leaky_relu(self.conv0(x))
+        # x = nn.functional.leaky_relu(self.conv0(x))
         # x = self.dropout0(x)
 
         # block 1
-        x = nn.functional.leaky_relu(self.conv1(x))
-        x = nn.functional.leaky_relu(self.conv2(x))
-        x = nn.functional.leaky_relu(self.conv3(x))
-        x = nn.functional.leaky_relu(self.conv4(x))
+        x = x + nn.functional.leaky_relu(self.conv1(x))
+        x = x + nn.functional.leaky_relu(self.conv2(x))
+        # x = x + nn.functional.leaky_relu(self.conv3(x))
+        # x = x + nn.functional.leaky_relu(self.conv4(x))
 
         # Flatten the tensor
         x = x.view(x.size(0), -1)

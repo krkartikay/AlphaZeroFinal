@@ -41,7 +41,7 @@ chess_dataset = ChessDataset(num_files=data_stats['next_file_num'],
 
 for i in range(500):
     print(f"{i+1}:")
-    losses = net.train_model(dataset=chess_dataset, epochs=10)
+    losses = net.train_model(dataset=chess_dataset, epochs=1)
     net.store()
     win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
     summary_writer.writerow([win,draw,loss,illegal,sum(all_moves)/len(all_moves),losses[-1][0]])
