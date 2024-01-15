@@ -21,8 +21,8 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.device = device
 
-        self.conv0 = nn.Conv2d(7, 7, kernel_size=3,
-                               padding='same')
+        # self.conv0 = nn.Conv2d(7, 7, kernel_size=3,
+        #                        padding='same')
 
         # self.batchnorm0 = nn.BatchNorm2d(7)
         # self.dropout0 = nn.Dropout(0.5)
@@ -37,14 +37,14 @@ class Model(nn.Module):
         # self.fc2 = nn.Linear(64 * 64, 64*64)
 
         self.prob_logits = nn.Linear(7*8*8, config.num_actions)
-        self.prob_head = nn.LogSoftmax(dim=1)
+        self.prob_head = nn.Sigmoid()
 
         # self.value_head = nn.Linear(64*64, 1)
         # self.value_activation = nn.Tanh()
 
         self.optimizer = optim.Adam(self.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay)
-        self.loss1 = nn.KLDivLoss(reduction='batchmean')
-        self.loss2 = nn.MSELoss()
+        self.loss1 = nn.BCELoss()
+        # self.loss2 = nn.MSELoss()
         self.to(self.device)
 
     def forward(self, x):
@@ -67,15 +67,15 @@ class Model(nn.Module):
 
         log_prob = self.prob_head(self.prob_logits(x))
         # value = self.value_activation(self.value_head(x))
-        value = torch.zeros(x.shape[0]).to(self.device)
-        return log_prob, value
+        # value = torch.zeros(x.shape[0]).to(self.device)
+        return log_prob
 
     def predict(self, gamestate):
         with torch.no_grad():
             image_tensor = torch.Tensor(gamestate.to_image()).to(self.device)
-            log_probs, value = self.forward(image_tensor)
-            probs = torch.exp(log_probs)
-        return probs, value
+            probs = self.forward(image_tensor)
+            # probs = torch.exp(log_probs)
+        return probs
 
     def train_model(self, dataset, epochs=100, verbose=False):
         # xs, probs, values = data
@@ -97,20 +97,20 @@ class Model(nn.Module):
                 batch_values = batch_values.to(self.device)
                 # actual training steps
                 self.optimizer.zero_grad()
-                pred_log_probs, pred_values = self.forward(batch_xs)
-                pred_values = pred_values.view((-1,))
-                loss1 = self.loss1(pred_log_probs, batch_probs)
-                loss2 = self.loss2(pred_values, batch_values)
-                loss = loss1 + loss2
+                pred_log_probs = self.forward(batch_xs)
+                # pred_values = pred_values.view((-1,))
+                loss = self.loss1(pred_log_probs, batch_probs)
+                # loss2 = self.loss2(pred_values, batch_values)
+                # loss = loss1 + loss2
                 loss.backward()
                 self.optimizer.step()
                 total_batch_time = time.time() - batch_start_time
                 batch_time_ms = total_batch_time * 1000
-                if i % 10 == 0:
-                    with torch.no_grad():
-                        l = (loss.item(), loss1.item(), loss2.item())
-                        print(f"(#{epoch+1:4}|{i+1:4})\ttotal loss: {loss.item():.4f}, prob loss: {loss1.item():.4f}, value loss: {loss2.item():.4f}, time/batch: {batch_time_ms:2.1f}ms")
-                        loss_history.append(l)
+                # if i % 10 == 0:
+                with torch.no_grad():
+                    l = loss.item()
+                    print(f"(#{epoch+1:4}|{i+1:4})\ttotal loss: {loss.item():.4f}, time/batch: {batch_time_ms:2.1f}ms")
+                    loss_history.append(l)
             # note the last loss after an epoch, it causes sync issues during a batch
             # todo: we can calculate avg or total loss here somehow
             total_epoch_time = time.time() - epoch_start_time

@@ -35,7 +35,7 @@ def evaluate_net(net: model.Model, eval_player = 'nnet', exclude_illegal=False):
         if config.eval_verbose:
             print('player: ', players[turn])
         if players[turn] == "nnet":
-            probs = net.predict(g)[0][0]
+            probs = net.predict(g)[0]
             if exclude_illegal:
                 probs = [probs[i] * actions[i] for i in range(len(actions))]
                 s = sum(probs)

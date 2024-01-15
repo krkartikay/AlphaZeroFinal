@@ -36,15 +36,15 @@ else:
     print("No training data!")
     os.abort()
 
-chess_dataset = ChessDataset(num_files=data_stats['next_file_num'],
+chess_dataset = ChessDataset(num_files=data_stats['next_file_num'] - 1,
                              file_lengths=data_stats['file_lengths'])
 
 for i in range(500):
     print(f"{i+1}:")
-    losses = net.train_model(dataset=chess_dataset, epochs=1)
+    losses = net.train_model(dataset=chess_dataset, epochs=10)
     net.store()
     win, draw, loss, illegal, moves, _, all_moves = evaluate.evaluate_model(net, verbose=True)
-    summary_writer.writerow([win,draw,loss,illegal,sum(all_moves)/len(all_moves),losses[-1][0]])
+    summary_writer.writerow([win,draw,loss,illegal,sum(all_moves)/len(all_moves),losses[-1]])
     results_writer.writerow(all_moves)
     print(f"\n\t\tAvg moves: {moves}, Completed games: {win+draw+loss}, All games: {all_moves}\n")
     results_file.flush()

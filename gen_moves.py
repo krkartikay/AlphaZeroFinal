@@ -8,7 +8,7 @@ import pickle
 # random.seed(42)
 # torch.random.manual_seed(42)
 
-NUM_GAMES = 1000
+NUM_GAMES = 100
 
 print("Generating training data.")
 
@@ -23,12 +23,12 @@ for i in range(NUM_GAMES):
         legal_actions = [i for i, x in enumerate(g.legal_actions()) if x]
         out = [int(x) for x in g.legal_actions()]
         out = numpy.array(out)
-        num_legal_actions = out.sum()
-        norm_out = out/num_legal_actions
+        # num_legal_actions = out.sum()
+        # norm_out = out/num_legal_actions
         action = random.choice(legal_actions)
         g = g.next_state(action)
         all_inps.append(inp[0])
-        all_outs.append(norm_out)
+        all_outs.append(out)
         all_vals.append(0)
     print(f"Game {i+1} done!")
 

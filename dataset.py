@@ -31,7 +31,7 @@ class ChessDataset(Dataset):
             self.current_file_idx = file_idx
             # Start prefetching the next file
             next_file_idx = file_idx + 1
-            if next_file_idx + 1 < self.num_files:
+            if next_file_idx < self.num_files:
                 threading.Thread(target=self.prefetch_file, args=(next_file_idx,)).start()
 
     def prefetch_file(self, file_idx):
